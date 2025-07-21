@@ -4,15 +4,13 @@
 
 int run = 1;
 extern HWND WindowHanled;
+RECT windowRect;
 
-void CenterCursorInWindow(HWND hwnd) {
-    RECT windowRect;
-    if (GetWindowRect(hwnd, &windowRect)) {
-        int centerX = windowRect.left + (windowRect.right - windowRect.left) / 2;
-        int centerY = windowRect.top + (windowRect.bottom - windowRect.top) / 2;
+void CenterCursorInWindow(RECT windowRect) {
+    int centerX = windowRect.left + (windowRect.right - windowRect.left) / 2;
+    int centerY = windowRect.top + (windowRect.bottom - windowRect.top) / 2;
         
-        SetCursorPos(centerX, centerY);
-    }
+    SetCursorPos(centerX, centerY);
 }
 
 void InitWindow(const char* title, HINSTANCE instanceHanled, int show);
@@ -24,12 +22,17 @@ int WINAPI WinMain(HINSTANCE hInstance,
                     int nShowCmd)
 {
     InitWindow("MDPIV",hInstance,nShowCmd);
+    GetWindowRect(WindowHanled, &windowRect);
 
-    CenterCursorInWindow(WindowHanled);
+    CenterCursorInWindow(windowRect);
+
     ShowCursor(FALSE);
 
+    RECT lockRect = { windowRect.left, windowRect.top, windowRect.right, windowRect.bottom };
+    ClipCursor(&lockRect);
+
     LONG style = GetWindowLong(WindowHanled, GWL_STYLE); 
-    style &= ~(WS_MAXIMIZEBOX); //| WS_MINIMIZEBOX);
+    style &= ~(WS_MAXIMIZEBOX | WS_THICKFRAME); //| WS_MINIMIZEBOX);
     SetWindowLong(WindowHanled, GWL_STYLE, style); 
 
     Graphics graph = Graphics();
@@ -58,6 +61,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
         }
     }
     
+    //ClipCursor(NULL);
     CleanWindow(hInstance);
 
     return msg.wParam;

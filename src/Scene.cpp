@@ -18,6 +18,15 @@ MD_MATH_MATRIX projection = MD_Math_PerspectiveMatrixRH(
     100.0f
 );
 
+MD_MATH_VECTOR3 eye = {0.0f, 0.0f,  3.0f};
+MD_MATH_VECTOR3 target = {0.0f, 0.0f, -1.0f};
+MD_MATH_VECTOR3 up = {0.0f, 1.0f,  0.0f};
+MD_MATH_MATRIX view = MD_Math_ViewMatrixRH(
+    eye,
+    target,
+    up
+);
+
 float points[] = {
 
     -0.5f, -0.5f, 0.0f,  0.0f, 0.0f,  
@@ -82,8 +91,8 @@ void Scene::Render()
     
     camera.Move();
     camera.Look();
-           
-    Shader_SetMatrix("view",camera.Matrix());
+       
+    Shader_SetMatrix("view",view);//camera.Matrix()
 
     glClearColor(0.3f, 0.3f, 0.3f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

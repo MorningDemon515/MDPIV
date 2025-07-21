@@ -12,6 +12,13 @@ LRESULT CALLBACK WndProc(HWND hWnd,
 
 void InitWindow(const char* title, HINSTANCE instanceHanled, int show)
 {
+
+    RECT rcWorkArea;
+    SystemParametersInfo(SPI_GETWORKAREA, 0, &rcWorkArea, 0);
+    
+    int x = (rcWorkArea.right - rcWorkArea.left) / 2 - WINDOW_WIDTH / 2;
+    int y = (rcWorkArea.bottom - rcWorkArea.top) / 2 - WINDOW_HEIGHT /2;
+
     wc.style = CS_HREDRAW |CS_VREDRAW ;
     wc.lpfnWndProc = WndProc;
     wc.cbClsExtra = 0;
@@ -33,8 +40,8 @@ void InitWindow(const char* title, HINSTANCE instanceHanled, int show)
         "MDPIV-Class",
         title,
         WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
+        x,
+        y,
         WINDOW_WIDTH,
         WINDOW_HEIGHT,
         0,
