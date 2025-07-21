@@ -28,17 +28,50 @@ MD_MATH_MATRIX view = MD_Math_ViewMatrixRH(
 );
 
 float points[] = {
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-    -0.5f, -0.5f, 0.0f,  0.0f, 0.0f,  
-     0.5f, -0.5f, 0.0f,  1.0f, 0.0f,  
-     0.5f,  0.5f, 0.0f,  1.0f, 1.0f,  
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
 
-     0.5f,  0.5f, 0.0f,  1.0f, 1.0f,  
-    -0.5f,  0.5f, 0.0f,  0.0f, 1.0f,  
-    -0.5f, -0.5f, 0.0f,  0.0f, 0.0f  
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f 
 };
 
-Camera camera = Camera();
+//Camera camera = Camera();
 
 Scene::Scene()
 {
@@ -67,17 +100,17 @@ void Scene::InitEnv()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 *sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 *sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    T_SetTextureRGBA("resources/awesomeface.png");
+    T_SetTextureRGB("resources/image.jpg");
     
     Shader_LoadFile("resources/shader/texture_vs.txt",
                     "resources/shader/texture_fs.txt");
     Shader_Set();
     Shader_Use();
 
-    Shader_SetMatrix("model",model);
+    Shader_SetMatrix("view",view);//camera.Matrix()
     Shader_SetMatrix("projection",projection);
 
 }
@@ -89,14 +122,26 @@ void Scene::Render()
         run = 0;
     }
     
-    camera.Move();
-    camera.Look();
-       
-    Shader_SetMatrix("view",view);//camera.Matrix()
+    //camera.Move();
+    //camera.Look();
+    
+    MD_MATH_MATRIX Rx, Ry;
+    Rx = MD_Math_RotationMatrix(3.14f / 4.0f, 'X');
 
+    static float y = 0.0f;
+    Ry = MD_Math_RotationMatrix(y , 'Y');
+    y += TimeDelta();
+
+    if(y >= 6.28f)
+        y = 0.0f;
+
+    model = MD_Math_MatrixMulMatrix(Rx, Ry);     
+
+    Shader_SetMatrix("model",model);   
+    
     glClearColor(0.3f, 0.3f, 0.3f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDrawArrays(GL_TRIANGLES, 0,36);
 
 }

@@ -54,4 +54,6 @@ void Graphics::MakeContext()
     gladLoadGL();
 
     SetWindowTextA(WindowHanled, "MDPIV - OpenGL 3.3");
+
+    glEnable(GL_DEPTH_TEST);
 }

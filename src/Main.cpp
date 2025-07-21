@@ -82,6 +82,6 @@ float TimeDelta()
     static float lastTime = (float)timeGetTime(); 
 	float currTime  = (float)timeGetTime();
 	float timeDelta = (currTime - lastTime)*0.001f;
+    lastTime = currTime;
 	return timeDelta;
-	lastTime = currTime;
 }
