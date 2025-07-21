@@ -11,14 +11,14 @@ private:
    MD_MATH_VECTOR3 cameraFront = {0.0f, 0.0f, -1.0f};
    MD_MATH_VECTOR3 cameraUp = {0.0f, 1.0f,  0.0f};
 
-   float lastX = WINDOW_WIDTH / 2 , lastY = WINDOW_HEIGHT / 2;
+   //float lastX = WINDOW_WIDTH / 2 , lastY = WINDOW_HEIGHT / 2;
 
-   POINT Cp = {0, 0};
+   //POINT Cp = {0, 0};
 
-   float pitch , yaw;
+   float pitch = 0.0f , yaw = -90.0f;
 
    float cameraSpeed = 0.05f;
-   float sensitivity = 0.1f;
+   float sensitivity = 0.8f;
 public:
     Camera();
     ~Camera();

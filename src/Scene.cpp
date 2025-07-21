@@ -18,14 +18,15 @@ MD_MATH_MATRIX projection = MD_Math_PerspectiveMatrixRH(
     100.0f
 );
 
-MD_MATH_VECTOR3 eye = {0.0f, 0.0f,  3.0f};
-MD_MATH_VECTOR3 target = {0.0f, 0.0f, -1.0f};
-MD_MATH_VECTOR3 up = {0.0f, 1.0f,  0.0f};
+MD_MATH_VECTOR3 cameraPos = {0.0f, 0.0f,  3.0f};
+MD_MATH_VECTOR3 cameraFront = {0.0f, 0.0f, -1.0f};
+MD_MATH_VECTOR3 cameraUp = {0.0f, 1.0f,  0.0f};
+
 MD_MATH_MATRIX view = MD_Math_ViewMatrixRH(
-    eye,
-    target,
-    up
-);
+        cameraPos,
+        MD_Math_Vector3Addition(cameraPos, cameraFront),
+        cameraUp
+    );
 
 float points[] = {
     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -71,7 +72,7 @@ float points[] = {
         -0.5f,  0.5f, -0.5f,  0.0f, 1.0f 
 };
 
-//Camera camera = Camera();
+Camera camera = Camera();
 
 Scene::Scene()
 {
@@ -109,8 +110,8 @@ void Scene::InitEnv()
                     "resources/shader/texture_fs.txt");
     Shader_Set();
     Shader_Use();
-
-    Shader_SetMatrix("view",view);//camera.Matrix()
+    
+    Shader_SetMatrix("model",model); 
     Shader_SetMatrix("projection",projection);
 
 }
@@ -122,26 +123,13 @@ void Scene::Render()
         run = 0;
     }
     
-    //camera.Move();
-    //camera.Look();
-    
-    MD_MATH_MATRIX Rx, Ry;
-    Rx = MD_Math_RotationMatrix(3.14f / 4.0f, 'X');
+    camera.Move();
+    camera.Look();
 
-    static float y = 0.0f;
-    Ry = MD_Math_RotationMatrix(y , 'Y');
-    y += TimeDelta();
+    Shader_SetMatrix("view", camera.Matrix());
 
-    if(y >= 6.28f)
-        y = 0.0f;
-
-    model = MD_Math_MatrixMulMatrix(Rx, Ry);     
-
-    Shader_SetMatrix("model",model);   
-    
-    glClearColor(0.3f, 0.3f, 0.3f, 0.0f);
+    glClearColor(0.3f, 0.3f, 0.3f, 1.0f);  
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glDrawArrays(GL_TRIANGLES, 0,36);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
 
 }

@@ -77,7 +77,7 @@ void ErrorMessage_2(HWND hwnd,const char* message)
     MessageBoxA(hwnd,message,"Engine Error!",MB_OK);
 }
 
-float TimeDelta()
+float DeltaTime()
 {
     static float lastTime = (float)timeGetTime(); 
 	float currTime  = (float)timeGetTime();

@@ -195,11 +195,19 @@ float MD_Math_Sin(float x)
 
    int k = (int)(x / MD_MATH_2PI);
 
-   for (int j = 0; j < k; j++)
-   {
-    x = x - MD_MATH_2PI;
-   }
-   
+   if(k < 0)
+   { 
+        for (int j = 0; j < (-1) * k; j++)
+        {
+            x = x + MD_MATH_2PI;
+        }
+    }
+    
+    for (int j = 0; j < k; j++)
+    {
+        x = x - MD_MATH_2PI;
+    }
+
    for (int i = 0; i < 13; i++)
    {
     r = r +((MD_Math_Pow(-1.0f,i)/ MD_Math_Factorial((float)(2 * i + 1))) *
@@ -214,12 +222,20 @@ float MD_Math_Cos(float x)
     float r = 0.0f;
 
    int k = (int)(x / MD_MATH_2PI);
+    
+    if(k < 0)
+    {
+        for (int j = 0; j < (-1) * k; j++)
+        {
+            x = x + MD_MATH_2PI;
+        }
+    }
 
-   for (int j = 0; j < k; j++)
-   {
-    x = x - MD_MATH_2PI;
-   }
-   
+    for (int j = 0; j < k; j++)
+    {
+         x = x - MD_MATH_2PI;
+    }
+
    for (int i = 0; i < 13; i++)
    {
     r = r +((MD_Math_Pow(-1.0f,i)/ MD_Math_Factorial((float)(2 * i))) *
@@ -1255,36 +1271,46 @@ MD_MATH_MATRIX MD_Math_PerspectiveMatrixRH(float fovy, float aspect, float zNear
 	
 MD_MATH_MATRIX MD_Math_ViewMatrixRH(MD_MATH_VECTOR3 eye, MD_MATH_VECTOR3 target, MD_MATH_VECTOR3 up)
 {
-	MD_MATH_MATRIX view = MD_Math_IdentityMatrix;
-		
-	MD_MATH_VECTOR3 forward = MD_Math_Vector3Normalized(
-		MD_Math_Vector3Addition(target, MD_Math_Vector3Multiplication(eye,-1.0f)) // target - eye
-		);
-		
-	MD_MATH_VECTOR3 right = MD_Math_Vector3Normalized(
-		MD_Math_VectorCross(forward, up)
-		);
-		
-	up = MD_Math_Vector3Normalized(
-		MD_Math_VectorCross(right, forward)
-		);
-		
-	view._11 = right.x;    
-	view._12 = right.y;
-	view._13 = right.z;
-	
-	view._21 = up.x;      
-	view._22 = up.y;
-	view._23 = up.z;
-		
-	view._31 = -forward.x; 
-	view._32 = -forward.y;
-	view._33 = -forward.z;
-		
-	view._14 = -MD_Math_Vector3Dot(right, eye);   
-	view._24 = -MD_Math_Vector3Dot(up, eye);      
-	view._34 = MD_Math_Vector3Dot(forward, eye);  
-		
+	MD_MATH_MATRIX view;
+
+    MD_MATH_VECTOR3 cameraPos = MD_Math_Vector3Multiplication(
+        eye, -1.0f
+    );
+
+    MD_MATH_VECTOR3 cameraDirection = MD_Math_Vector3Normalized(
+        MD_Math_Vector3Addition(
+            eye, MD_Math_Vector3Multiplication(target, -1.0f)
+        )
+    );
+    MD_MATH_VECTOR3 cameraRight = MD_Math_Vector3Normalized(
+        MD_Math_VectorCross(
+            up, cameraDirection
+        )
+    );
+    MD_MATH_VECTOR3 cameraUp = MD_Math_VectorCross(
+        cameraDirection, cameraRight
+    );
+
+    view._11 = cameraRight.x;
+    view._21 = cameraUp.x;
+    view._31 = cameraDirection.x;
+    view._41 = 0.0f;
+
+    view._12 = cameraRight.y;
+    view._22 = cameraUp.y;
+    view._32 = cameraDirection.y;
+    view._42 = 0.0f;
+
+    view._13 = cameraRight.z;
+    view._23 = cameraUp.z;
+    view._33 = cameraDirection.z;
+    view._43 = 0.0f;
+
+    view._14 = cameraPos.x * cameraRight.x + cameraPos.y * cameraRight.y + cameraPos.z * cameraRight.z;
+    view._24 = cameraPos.x * cameraUp.x + cameraPos.y * cameraUp.y + cameraPos.z * cameraUp.z;
+    view._34 = cameraPos.x * cameraDirection.x + cameraPos.y * cameraDirection.y + cameraPos.z * cameraDirection.z;
+    view._44 = 1.0f;
+
 	return view;
 }
 
@@ -1331,37 +1357,47 @@ MD_MATH_MATRIX MD_Math_PerspectiveMatrixLH(float fovy, float aspect, float zNear
 
 MD_MATH_MATRIX MD_Math_ViewMatrixLH(MD_MATH_VECTOR3 eye, MD_MATH_VECTOR3 target, MD_MATH_VECTOR3 up)
 {
-    MD_MATH_MATRIX view = MD_Math_IdentityMatrix;
+    MD_MATH_MATRIX view;
 
-    MD_MATH_VECTOR3 forward = MD_Math_Vector3Normalized(
-        MD_Math_Vector3Addition(target, MD_Math_Vector3Multiplication(eye, -1.0f))
+    MD_MATH_VECTOR3 cameraPos = MD_Math_Vector3Multiplication(
+        eye, -1.0f
     );
 
-    MD_MATH_VECTOR3 right = MD_Math_Vector3Normalized(
-        MD_Math_VectorCross(up, forward) 
+    MD_MATH_VECTOR3 cameraDirection = MD_Math_Vector3Normalized(
+        MD_Math_Vector3Addition(
+            eye, MD_Math_Vector3Multiplication(target, -1.0f)
+        )
+    );
+    MD_MATH_VECTOR3 cameraRight = MD_Math_Vector3Normalized(
+        MD_Math_VectorCross(
+            up, cameraDirection
+        )
+    );
+    MD_MATH_VECTOR3 cameraUp = MD_Math_VectorCross(
+        cameraDirection, cameraRight
     );
 
-    up = MD_Math_Vector3Normalized(
-        MD_Math_VectorCross(forward, right)
-    );
+    view._11 = cameraRight.x;
+    view._21 = cameraUp.x;
+    view._31 = cameraDirection.x;
+    view._41 = 0.0f;
 
-    view._11 = right.x;
-    view._12 = right.y;
-    view._13 = right.z;
+    view._12 = cameraRight.y;
+    view._22 = cameraUp.y;
+    view._32 = cameraDirection.y;
+    view._42 = 0.0f;
 
-    view._21 = up.x;
-    view._22 = up.y;
-    view._23 = up.z;
+    view._13 = cameraRight.z;
+    view._23 = cameraUp.z;
+    view._33 = cameraDirection.z;
+    view._43 = 0.0f;
 
-    view._31 = forward.x; 
-    view._32 = forward.y;
-    view._33 = forward.z;
+    view._14 = -1.0f * (cameraPos.x * cameraRight.x + cameraPos.y * cameraRight.y + cameraPos.z * cameraRight.z);
+    view._24 = -1.0f * (cameraPos.x * cameraUp.x + cameraPos.y * cameraUp.y + cameraPos.z * cameraUp.z);
+    view._34 = -1.0f * (cameraPos.x * cameraDirection.x + cameraPos.y * cameraDirection.y + cameraPos.z * cameraDirection.z);
+    view._44 = 1.0f;
 
-    view._14 = -MD_Math_Vector3Dot(right, eye);   
-    view._24 = -MD_Math_Vector3Dot(up, eye);     
-    view._34 = -MD_Math_Vector3Dot(forward, eye); 
-
-    return view;
+	return view;
 }
 	
 MD_MATH_MATRIX MD_Math_ReflectMatrix(MD_MATH_PLANE p)

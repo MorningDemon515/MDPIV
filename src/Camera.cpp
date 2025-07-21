@@ -31,6 +31,7 @@ void Camera::Move()
 
 void Camera::Look()
 {
+    /*
     Cp = Input_GetMousePosition();
 
     float xoffset = Cp.x - lastX;
@@ -43,6 +44,16 @@ void Camera::Look()
 
     yaw   += xoffset;
     pitch += yoffset;
+    */
+
+    if(Input_IsKeyDown(VK_LEFT))
+        yaw -= sensitivity;
+    if(Input_IsKeyDown(VK_RIGHT))
+        yaw += sensitivity;
+    if(Input_IsKeyDown(VK_UP))
+        pitch += sensitivity;
+    if(Input_IsKeyDown(VK_DOWN))
+        pitch -= sensitivity;
 
     if(pitch > 89.0f)
         pitch =  89.0f;
@@ -59,7 +70,7 @@ MD_MATH_MATRIX Camera::Matrix()
 {
     MD_MATH_MATRIX view = MD_Math_ViewMatrixRH(
          cameraPos,
-         cameraFront,
+         MD_Math_Vector3Addition(cameraPos, cameraFront),
          cameraUp
     );   
 
