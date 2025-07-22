@@ -86,6 +86,7 @@ VECTOR3 cubePositions[] = {
 };
 
 Camera camera = Camera();
+Shader shader = Shader();
 
 Scene::Scene()
 {
@@ -97,8 +98,6 @@ Scene::~Scene()
    glDeleteBuffers(1,&VBO);
    glDeleteBuffers(1,&VAO);
    glDeleteTextures(1,&texture);
-
-   Shader_Clean();
 
 }
 
@@ -119,12 +118,11 @@ void Scene::InitEnv()
 
     T_SetTextureRGB("resources/image.jpg");
     
-    Shader_LoadFile("resources/shader/texture_vs.txt",
+    shader.LoadFile("resources/shader/texture_vs.txt",
                     "resources/shader/texture_fs.txt");
-    Shader_Set();
-    Shader_Use();
+    shader.Use();
     
-    Shader_SetMatrix("projection",projection);
+    shader.SetMatrix("projection",projection);
 
 }
 
@@ -144,7 +142,7 @@ void Scene::Render()
     camera.Move();
     camera.Look();
 
-    Shader_SetMatrix("view", camera.Matrix());
+    shader.SetMatrix("view", camera.Matrix());
 
     glClearColor(0.3f, 0.3f, 0.3f, 1.0f);  
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -162,7 +160,7 @@ void Scene::Render()
         model_angle_Z *= 0.5f;
 
         model = model_lation * model_angle_X * model_angle_Y * model_angle_Z ;
-        Shader_SetMatrix("model", model);
+        shader.SetMatrix("model", model);
 
         glDrawArrays(GL_TRIANGLES, 0, 36);
     }

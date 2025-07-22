@@ -12,6 +12,7 @@ add_executable(MDPIV WIN32
 		src/Texture.c
 		src/Camera.cpp
         src/Scene.cpp
+		src/Scene2.cpp
         src/Window.cpp 
         src/Main.cpp
 		MDPIV.rc)

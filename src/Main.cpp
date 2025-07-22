@@ -1,5 +1,6 @@
 #include "Graphics.h"
-#include "Scene.h"
+//#include "Scene.h"
+#include "Scene2.h"
 #include "SimpleInput.h"
 
 int run = 1;
@@ -38,7 +39,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
     Graphics graph = Graphics();
     graph.MakeContext();
 
-    Scene sc = Scene();
+    //Scene sc = Scene();
+    Scene2 sc = Scene2();
     sc.InitEnv();
 
     MSG msg;
