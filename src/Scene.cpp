@@ -11,7 +11,6 @@
 extern int run;
 using namespace MD_Math;
 
-MATRIX model = IdentityMatrix();
 MATRIX projection = PerspectiveMatrixRH(
     AngularToRadian(45.0f),
     (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT,
@@ -73,6 +72,19 @@ float points[] = {
         -0.5f,  0.5f, -0.5f,  0.0f, 1.0f 
 };
 
+VECTOR3 cubePositions[] = {
+    VECTOR3( 0.0f,  0.0f,  0.0f),
+    VECTOR3( 2.0f,  5.0f, -15.0f),
+    VECTOR3(-1.5f, -2.2f, -2.5f),
+    VECTOR3(-3.8f, -2.0f, -12.3f),
+    VECTOR3( 2.4f, -0.4f, -3.5f),
+    VECTOR3(-1.7f,  3.0f, -7.5f),
+    VECTOR3( 1.3f, -2.0f, -2.5f),
+    VECTOR3( 1.5f,  2.0f, -2.5f),
+    VECTOR3( 1.5f,  0.2f, -1.5f),
+    VECTOR3(-1.3f,  1.0f, -1.5f)
+};
+
 Camera camera = Camera();
 
 Scene::Scene()
@@ -112,10 +124,15 @@ void Scene::InitEnv()
     Shader_Set();
     Shader_Use();
     
-    Shader_SetMatrix("model",model); 
     Shader_SetMatrix("projection",projection);
 
 }
+
+MATRIX model = IdentityMatrix();
+MATRIX model_lation = IdentityMatrix();
+MATRIX model_angle_X = IdentityMatrix();
+MATRIX model_angle_Y = IdentityMatrix();
+MATRIX model_angle_Z = IdentityMatrix();
 
 void Scene::Render()
 {
@@ -131,6 +148,23 @@ void Scene::Render()
 
     glClearColor(0.3f, 0.3f, 0.3f, 1.0f);  
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    for (unsigned int i = 0; i < 10; i++)
+    {
+         
+        model_lation = TranslationMatrix(cubePositions[i].x , cubePositions[i].y, cubePositions[i].z);
+        float angle = 20.0f * i;
+        model_angle_X = RotationMatrix(AngularToRadian(angle), 'X');
+        model_angle_Y = RotationMatrix(AngularToRadian(angle), 'Y');
+        model_angle_Z = RotationMatrix(AngularToRadian(angle), 'Z');
+
+        model_angle_Y *= 0.3f;
+        model_angle_Z *= 0.5f;
+
+        model = model_lation * model_angle_X * model_angle_Y * model_angle_Z ;
+        Shader_SetMatrix("model", model);
+
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
 
 }
