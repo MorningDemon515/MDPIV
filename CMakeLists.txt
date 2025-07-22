@@ -4,9 +4,9 @@ cmake_minimum_required(VERSION 3.16)
 project(MDPIV)
 
 add_executable(MDPIV WIN32
-        src/MD_Math.c
+        src/MD_Math.cpp
         src/OpenGL3.3/src/glad.c
-		src/Shader.c
+		src/Shader.cpp
         src/Graphics.cpp
 		src/SimpleInput.c
 		src/Texture.c

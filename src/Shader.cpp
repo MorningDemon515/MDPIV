@@ -27,10 +27,6 @@ const char* ReadFile(const char* filename) {
     return (const char*)buffer;  
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 const char* VSS;
 const char* FSS;
 unsigned int Program;
@@ -87,25 +83,25 @@ void Shader_SetFloat(const char* name, float value)
     glUniform1f(glGetUniformLocation(Program, name), value);
 }
 
-void Shader_SetVec2(const char* name,MD_MATH_VECTOR2 value)
+void Shader_SetVec2(const char* name,MD_Math::VECTOR2 value)
 {
     glUniform2f(glGetUniformLocation(Program, name), value.x, value.y);
 }
 
-void Shader_SetVec3(const char* name,MD_MATH_VECTOR3 value)
+void Shader_SetVec3(const char* name,MD_Math::VECTOR3 value)
 {
     glUniform3f(glGetUniformLocation(Program, name), value.x, value.y,value.z);
 }
 
-void Shader_SetVec4(const char* name,MD_MATH_VECTOR4 value)
+void Shader_SetVec4(const char* name,MD_Math::VECTOR4 value)
 {
     glUniform4f(glGetUniformLocation(Program, name), value.x, value.y,value.z, value.w);
 }
 
-void Shader_SetMatrix(const char* name, MD_MATH_MATRIX value)
+void Shader_SetMatrix(const char* name, MD_Math::MATRIX value)
 {
     float Mat_ptr[16];
-    MD_Math_MatrixToValue(value,Mat_ptr); 
+    MD_Math::MatrixToValue(value,Mat_ptr); 
 
     glUniformMatrix4fv(
         glGetUniformLocation(Program, name),
@@ -113,7 +109,3 @@ void Shader_SetMatrix(const char* name, MD_MATH_MATRIX value)
         GL_FALSE,
         Mat_ptr);
 }
-
-#ifdef __cplusplus
-}
-#endif

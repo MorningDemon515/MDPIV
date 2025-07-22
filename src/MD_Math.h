@@ -5,331 +5,292 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <stdbool.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern const float MD_MATH_PI;
+#define MD_MATH_PI 3.14159265358979323846f//26433832795028841971693993751058209749445923078164062862089986280348253421170679f;
 //Take 100 decimal places for pi
-
 #define MD_MATH_2PI 6.283185307179586f 
 #define MD_MATH_PI_2   1.57079632679489661923f
 #define MD_MATH_PI_4 0.78539816339744830962f
 #define MD_MATH_3_2_PI 4.71238898038468985769f
 
-extern const float MD_MATH_E;
+#define MD_MATH_E 2.71828182845904523536f//02874713526624977572470936999595749669676277240766303535475945713821785251664274f;
 
-extern const float MD_MATH_PIReciprocal;
+#define MD_MATH_PIReciprocal 0.31830988618379067153f//7767526745028724068919291480912897495334688117793595268453070180227605532506171912f;
 
-extern const float MD_MATH_THIRD;
+#define MD_MATH_THIRD 0.33333333333333333333f//33333333333333333333333333333333333333333333333333333333333333333333333333333333;
 
 //The value of root number 2 must be 100 digits
-extern const float MD_MATH_SQRT2;
+#define MD_MATH_SQRT2 1.41421356237309504880f//1688724209698078569671875376948073176679737990732478462107038850387534327641573f;
 //The value of root number 3 must be 100 digits
-extern const float MD_MATH_SQRT3;
+#define MD_MATH_SQRT3 1.73205080756887729352f//7446341505872366942805253810380628055806979451933016908800037081146186757248576f;
 
-extern const float MD_MATH_OneHundredAndEighty;
+#define MD_MATH_OneHundredAndEighty 0.005555555555555556f
 
-extern const float MD_MATH_1Degree;
-extern const float MD_MATH_1Radian;
+#define MD_MATH_1Degree 0.017453f
+#define MD_MATH_1Radian 57.30f
 
-extern const float MD_MATH_EPSILON;
+#define MD_MATH_EPSILON 1.192092896e-07f
 
-extern const float MD_MATH_LN2;
+#define MD_MATH_LN2 0.69314718055994530942f
 
 //Special trigonometric values
-#define MD_MATH_SIN0  0.0f, 
-#define MD_MATH_SIN30  0.5f,
-#define MD_MATH_SIN45  MD_MATH_SQRT2 * 0.5f,
-#define MD_MATH_SIN60  MD_MATH_SQRT3 * 0.5f,
-#define MD_MATH_SIN90  1.0f,
-#define MD_MATH_SIN120  MD_MATH_SQRT3 * 0.5f,
-#define MD_MATH_SIN150  0.5f,
-#define MD_MATH_SIN180  0.0f,
-#define MD_MATH_SIN270  -1.0f;
+#define MD_MATH_SIN0  0.0f
+#define MD_MATH_SIN30  0.5f
+#define MD_MATH_SIN45  MD_MATH_SQRT2 * 0.5f
+#define MD_MATH_SIN60  MD_MATH_SQRT3 * 0.5f
+#define MD_MATH_SIN90  1.0f
+#define MD_MATH_SIN120  MD_MATH_SQRT3 * 0.5f
+#define MD_MATH_SIN150  0.5f
+#define MD_MATH_SIN180  0.0f
+#define MD_MATH_SIN270  -1.0f
 
-#define MD_MATH_COS0  1.0f, 
-#define MD_MATH_COS30  MD_MATH_SQRT3 * 0.5f,
-#define MD_MATH_COS45  MD_MATH_SQRT2 * 0.5f,
-#define MD_MATH_COS60  0.5f,
-#define MD_MATH_COS90  0.0f,
-#define MD_MATH_COS120  -1.0f * 0.5f,
-#define MD_MATH_COS150  -1.0f * MD_MATH_SQRT3 *0.5f,
-#define MD_MATH_COS180  -1.0f,
-#define MD_MATH_COS270  0.0f;   
+#define MD_MATH_COS0  1.0f
+#define MD_MATH_COS30  MD_MATH_SQRT3 * 0.5f
+#define MD_MATH_COS45  MD_MATH_SQRT2 * 0.5f
+#define MD_MATH_COS60  0.5f
+#define MD_MATH_COS90  0.0f
+#define MD_MATH_COS120  -1.0f * 0.5f
+#define MD_MATH_COS150  -1.0f * MD_MATH_SQRT3 *0.5f
+#define MD_MATH_COS180  -1.0f
+#define MD_MATH_COS270  0.0f  
 
-#define MD_MATH_TAN0  0.0f, 
-#define MD_MATH_TAN30 MD_MATH_SQRT3 * MD_MATH_THIRD,
-#define MD_MATH_TAN45  1.0f,
-#define MD_MATH_TAN60  MD_MATH_SQRT3,
-#define MD_MATH_TAN120  -1.0f * MD_MATH_SQRT3,
-#define MD_MATH_TAN150  -1.0f * MD_MATH_SQRT3 * MD_MATH_THIRD,
-#define MD_MATH_TAN180  0.0f;                      
+#define MD_MATH_TAN0  0.0f
+#define MD_MATH_TAN30 MD_MATH_SQRT3 * MD_MATH_THIRD
+#define MD_MATH_TAN45  1.0f
+#define MD_MATH_TAN60  MD_MATH_SQRT3
+#define MD_MATH_TAN120  -1.0f * MD_MATH_SQRT3
+#define MD_MATH_TAN150  -1.0f * MD_MATH_SQRT3 * MD_MATH_THIRD
+#define MD_MATH_TAN180  0.0f                      
 
-float MD_Math_Abs(float number);
+namespace MD_Math{
 
-float MD_Math_Mod(float number1, float number2);
+    float Abs(float number);
+    float Mod(float number1, float number2);
+    float Pow(float x, int y);
+    float Max(float number1, float number2);
+    float Min(float number1, float number2);
+    float Sqrt(float number);
+    float Cbrt(float number);
+    float Rsqrt(float number);
+    float Hypot(float x,float y);
+    float Factorial(int number);
+    float Sin(float x);
+    float Cos(float x);
+    float Tan(float x );
+    float Cot(float x);
+    float ArcSin(float x);
+    float ArcCos(float x);
+    float ArcTan(float x);
+    float Sec(float x);
+    float Csc(float x);
+    bool Equal(float a,float b, float epsilon);
+    float EtoXPower(float x);
+    float lnx(float x);
+    float lgx(float x);
+    float log2(float x);
+    float AngularToRadian(float angle);
+    float RadianToangle(float Radian);
+    float ComputeRectanglePerimeter(float Length, float Width);
+    float ComputeSquarePerimeter(float Length);
+    float ComputeRectangleArea(float Length, float Width);
+    float ComputeSquareArea(float Length);
+    float ComputeTriangleArea(float Bottom, float Height);
+    float ComputeParallelogramArea(float Bottom, float Height);
+    float ComputeTrapezoidArea(float Top, float Bottom,float Height);
+    float ComputeCirclePerimeter(float radius);
+    float ComputeCircleArea(float radius);
+    float ComputeCuboidVolume(float Length, float Width, float Height);
+    float ComputeCubeVolume(float Length);
+    float ComputeCylinderSideArea(float radius, float height);
+    float ComputeConeSideArea(float radius, float busbar);
+    float ComputeRoundTableSideArea(float radius1,float radius2,float busbar);
+    float ComputeCylinderSurfaceArea(float radius, float height);
+    float ComputeConeSurfaceArea(float radius, float busbar);
+    float ComputeRoundTableSurfaceArea(float radius1,float radius2, float busbar);
+    float ComputeBallSurfaceArea(float radius);
+    float ComputeCylinderVolume(float radius, float height);
+    float ComputeConeVolume(float radius, float height);
+    float ComputeRoundTableVolume(float radius1, float radius2, float height);
+    float ComputeBallVolume(float radius);
 
-float MD_Math_Pow(float x, int y);
+    typedef struct VECTOR2
+    {
+        VECTOR2(float _x, float _y);
+        float x,y;
 
-float MD_Math_Max(float number1, float number2);
+        VECTOR2 operator + (const VECTOR2& v2);
+        void operator += (const VECTOR2& v2);
 
-float MD_Math_Min(float number1, float number2);
+        VECTOR2 operator - (const VECTOR2& v2);
+        void operator -= (const VECTOR2& v2);
 
-float MD_Math_Sqrt(float number);
+        float operator * (const VECTOR2& v2);
+        VECTOR2 operator * (const float& f);
+        void operator *= (const float& f);
 
-float MD_Math_Cbrt(float number);
+        bool operator == (const VECTOR2& v2);
+        bool operator != (const VECTOR2& v2);
 
-float MD_Math_Rsqrt(float number);
+        VECTOR2 operator - ();
 
-float MD_Math_Hypot(float x,float y);
+    } VECTOR2;
 
-float MD_Math_Factorial(int number);
+    typedef struct VECTOR3
+    {
+        VECTOR3(float _x, float _y, float _z);
+        float x,y,z;
 
-float MD_Math_Sin(float x);
+        VECTOR3 operator + (const VECTOR3& v2);
+        void operator += (const VECTOR3& v2);
 
-float MD_Math_Cos(float x);
+        VECTOR3 operator - (const VECTOR3& v2);
+        void operator -= (const VECTOR3& v2);
 
-float MD_Math_Tan(float x );
+        float operator * (const VECTOR3& v2);
+        VECTOR3 operator * (const float& f);
+        void operator *= (const float& f);
 
-float MD_Math_Cot(float x);
+        bool operator == (const VECTOR3& v2);
+        bool operator != (const VECTOR3& v2);
 
-float MD_Math_ArcSin(float x);
+        VECTOR3 operator - ();
 
-float MD_Math_ArcCos(float x);
+    } VECTOR3;
 
-float MD_Math_ArcTan(float x);
+    typedef struct MATRIX
+    {
+        float _11, _12, _13, _14,
+              _21, _22, _23, _24,
+              _31, _32, _33, _34,
+              _41, _42, _43, _44;
 
-float MD_Math_Sec(float x);
+        MATRIX operator + (const MATRIX& m2);      
+        void operator += (const MATRIX& m2);    
 
-float MD_Math_Csc(float x);
+        MATRIX operator - (const MATRIX& m2);      
+        void operator -= (const MATRIX& m2);
 
-bool MD_Math_Equal(float a,float b, float epsilon);
+        MATRIX operator * (const MATRIX& m2);
+        void operator *= (const MATRIX& m2);
 
-float MD_Math_EtoXPower(float x);
+        MATRIX operator * (const float& f);
+        void operator *= (const float& f);
 
-float MD_Math_lnx(float x);
+        bool operator == (const MATRIX& m);
+        bool operator != (const MATRIX& m);
 
-float MD_Math_lgx(float x);
+        MATRIX operator - ();
 
-float MD_Math_log2(float x);
+    } MATRIX;
 
-float MD_Math_AngularToRadian(float angle);
+    typedef struct VECTOR4
+    {
+        VECTOR4(float _x, float _y, float _z, float _w);
+        float x,y,z,w;
 
-float MD_Math_RadianToangle(float Radian);
+        VECTOR4 operator + (const VECTOR4& v2);
+        void operator += (const VECTOR4& v2);
 
-float MD_Math_ComputeRectanglePerimeter(float Length, float Width);
-float MD_Math_ComputeSquarePerimeter(float Length);
+        VECTOR4 operator - (const VECTOR4& v2);
+        void operator -= (const VECTOR4& v2);
 
-float MD_Math_ComputeRectangleArea(float Length, float Width);
+        float operator * (const VECTOR4& v2);
+        VECTOR4 operator * (const float& f);
+        void operator *= (const float& f);
 
-float MD_Math_ComputeSquareArea(float Length);
+        VECTOR4 operator * (const MATRIX m);
+        void operator *= (const MATRIX m);
 
-float MD_Math_ComputeTriangleArea(float Bottom, float Height);
+        bool operator == (const VECTOR4& v2);
+        bool operator != (const VECTOR4& v2);
 
-float MD_Math_ComputeParallelogramArea(float Bottom, float Height);
+        VECTOR4 operator - ();
+    }VECTOR4;
 
-float MD_Math_ComputeTrapezoidArea(float Top, float Bottom,float Height);
+    typedef struct MATRIX2x2
+    {
+        float _11, _12, 
+              _21, _22;
+    } MATRIX2x2;
 
-float MD_Math_ComputeCirclePerimeter(float radius);
+    typedef struct MATRIX3x3
+    {
+        float _11, _12, _13,
+              _21, _22, _23,
+              _31, _32, _33;
+    } MATRIX3x3;
 
-float MD_Math_ComputeCircleArea(float radius);
-
-float MD_Math_ComputeCuboidVolume(float Length, float Width, float Height);
-
-float MD_Math_ComputeCubeVolume(float Length);
-
-float MD_Math_ComputeCylinderSideArea(float radius, float height);
-
-float MD_Math_ComputeConeSideArea(float radius, float busbar);
-
-float MD_Math_ComputeRoundTableSideArea(float radius1,float radius2,float busbar);
-
-float MD_Math_ComputeCylinderSurfaceArea(float radius, float height);
-float MD_Math_ComputeConeSurfaceArea(float radius, float busbar);
-float MD_Math_ComputeRoundTableSurfaceArea(float radius1,float radius2, float busbar);
-
-float MD_Math_ComputeBallSurfaceArea(float radius);
-
-float MD_Math_ComputeCylinderVolume(float radius, float height);
-float MD_Math_ComputeConeVolume(float radius, float height);
-
-float MD_Math_ComputeRoundTableVolume(float radius1, float radius2, float height);
-float MD_Math_ComputeBallVolume(float radius);
-typedef struct MD_MATH_VECTOR2
-{
-    float x,y;
-} MD_MATH_VECTOR2;
-
-typedef struct MD_MATH_VECTOR3
-{
-    float x,y,z;
-} MD_MATH_VECTOR3;
-
-typedef struct MD_MATH_VECTO4
-{
-    float x,y,z,w;
-} MD_MATH_VECTOR4;
-
-typedef struct MD_MATH_MATRIX
-{
-    float _11, _12, _13, _14,
-          _21, _22, _23, _24,
-          _31, _32, _33, _34,
-          _41, _42, _43, _44;
-} MD_MATH_MATRIX;
-
-typedef struct MD_MATH_MATRIX2x2
-{
-    float _11, _12, 
-          _21, _22;
-} MD_MATH_MATRIX2x2;
-
-typedef struct MD_MATH_MATRIX3x3
-{
-    float _11, _12, _13,
-          _21, _22, _23,
-          _31, _32, _33;
-} MD_MATH_MATRIX3x3;
- 
-extern const MD_MATH_VECTOR2 BasisVector2I;
-extern const MD_MATH_VECTOR2 BasisVector2J;
-
-extern const MD_MATH_VECTOR3 BasisVector3I;
-extern const MD_MATH_VECTOR3 BasisVector3J;
-
-extern const MD_MATH_VECTOR4 BasisVector4I;
-extern const MD_MATH_VECTOR4 BasisVector4J;
-
-extern const MD_MATH_VECTOR3 BasisVector3K;
-extern const MD_MATH_VECTOR4 BasisVector4K;
-
-extern const MD_MATH_VECTOR4 BasisVector4W;
-
-extern const MD_MATH_MATRIX MD_Math_IdentityMatrix;
+    MATRIX IdentityMatrix();
 
 
 // About Vector--------------------------------------------------------------------------------
-bool MD_Math_Vector2Equal(MD_MATH_VECTOR2 v1,MD_MATH_VECTOR2 v2);
 
-bool MD_Math_Vector3Equal(MD_MATH_VECTOR3 v1,MD_MATH_VECTOR3 v2);
+    float ComputeVector2Length(VECTOR2 v);
+    float ComputeVector3Length(VECTOR3 v);
+    float ComputeVector4Length(VECTOR4 v);
 
-bool MD_Math_Vector4Equal(MD_MATH_VECTOR4 v1,MD_MATH_VECTOR4 v2);
+    VECTOR2 Vector2Normalized(VECTOR2 v);
+    VECTOR3 Vector3Normalized(VECTOR3 v);
+    VECTOR4 Vector4Normalized(VECTOR4 v);
 
-MD_MATH_VECTOR2 MD_Math_Vector2Addition(MD_MATH_VECTOR2 v1, MD_MATH_VECTOR2 v2);
-MD_MATH_VECTOR3 MD_Math_Vector3Addition(MD_MATH_VECTOR3 v1, MD_MATH_VECTOR3 v2);
+    VECTOR3 VectorCross(VECTOR3 v1, VECTOR3 v2);
 
-MD_MATH_VECTOR4 MD_Math_Vector4Addition(MD_MATH_VECTOR4 v1, MD_MATH_VECTOR4 v2);
+    float ProjectionOfVector2(VECTOR2 v1, VECTOR2 v2);
+    float ProjectionOfVector3(VECTOR3 v1, VECTOR3 v2);
+    float ProjectionOfVector4(VECTOR4 v1, VECTOR4 v2);
 
-MD_MATH_VECTOR2 MD_Math_Vector2Multiplication(MD_MATH_VECTOR2 v,float x);
-
-MD_MATH_VECTOR3 MD_Math_Vector3Multiplication(MD_MATH_VECTOR3 v,float x);
-
-MD_MATH_VECTOR4 MD_Math_Vector4Multiplication(MD_MATH_VECTOR4 v,float x);
-float MD_Math_ComputeVector2Length(MD_MATH_VECTOR2 v);
-
-float MD_Math_ComputeVector3Length(MD_MATH_VECTOR3 v);
-
-float MD_Math_ComputeVector4Length(MD_MATH_VECTOR4 v);
-
-MD_MATH_VECTOR2 MD_Math_Vector2Normalized(MD_MATH_VECTOR2 v);
-
-MD_MATH_VECTOR3 MD_Math_Vector3Normalized(MD_MATH_VECTOR3 v);
-
-MD_MATH_VECTOR4 MD_Math_Vector4Normalized(MD_MATH_VECTOR4 v);
-
-float MD_Math_Vector2Dot(MD_MATH_VECTOR2 v1,MD_MATH_VECTOR2 v2);
-
-float MD_Math_Vector3Dot(MD_MATH_VECTOR3 v1,MD_MATH_VECTOR3 v2);
-
-float MD_Math_Vector4Dot(MD_MATH_VECTOR4 v1,MD_MATH_VECTOR4 v2);
-
-MD_MATH_VECTOR3 MD_Math_VectorCross(MD_MATH_VECTOR3 v1, MD_MATH_VECTOR3 v2);
-
-float MD_Math_ProjectionOfVector2(MD_MATH_VECTOR2 v1, MD_MATH_VECTOR2 v2);
-
-float MD_Math_ProjectionOfVector3(MD_MATH_VECTOR3 v1, MD_MATH_VECTOR3 v2);
-
-float MD_Math_ProjectionOfVector4(MD_MATH_VECTOR4 v1, MD_MATH_VECTOR4 v2);
-
-MD_MATH_VECTOR2 MD_Math_ProjectionVector2(MD_MATH_VECTOR2 v1, MD_MATH_VECTOR2 v2);
-
-MD_MATH_VECTOR3 MD_Math_ProjectionVector3(MD_MATH_VECTOR3 v1, MD_MATH_VECTOR3 v2);
-MD_MATH_VECTOR4 MD_Math_ProjectionVector4(MD_MATH_VECTOR4 v1, MD_MATH_VECTOR4 v2);
+    VECTOR2 ProjectionVector2(VECTOR2 v1, VECTOR2 v2);
+    VECTOR3 ProjectionVector3(VECTOR3 v1, VECTOR3 v2);
+    VECTOR4 ProjectionVector4(VECTOR4 v1, VECTOR4 v2);
 //---------------------------------------------------------------------------------------------------------
 //About Matrix --------------------------------------------------------------------------------------------
 
-MD_MATH_VECTOR4 MD_Math_VectorMulMatrix(MD_MATH_MATRIX m, MD_MATH_VECTOR4 v);
-
-MD_MATH_MATRIX MD_Math_MatrixMulMatrix(MD_MATH_MATRIX m1,MD_MATH_MATRIX m2);
-
-
-MD_MATH_MATRIX MD_Math_MatrixAddMatrix(MD_MATH_MATRIX m1,MD_MATH_MATRIX m2);
-
-MD_MATH_MATRIX MD_Math_MatrixMultiplication(MD_MATH_MATRIX m,float x);
-
-MD_MATH_MATRIX MD_Math_MatrixTranspose(MD_MATH_MATRIX m);
-
-float MD_Math_DetMatrix2x2(MD_MATH_MATRIX2x2 m);
-
-float MD_Math_DetMatrix3x3(MD_MATH_MATRIX3x3 m);
-float MD_Math_DetMatrix4x4(MD_MATH_MATRIX m);
-
-MD_MATH_MATRIX MD_Math_AdjointMatrix(MD_MATH_MATRIX m);
-
-MD_MATH_MATRIX MD_Math_InvMatrix(MD_MATH_MATRIX m);
-
-bool MD_Math_MatrixEqual(MD_MATH_MATRIX m1 , MD_MATH_MATRIX m2);
-
-void MD_Math_MatrixToValue(MD_MATH_MATRIX m, float* out);
+    MATRIX MatrixTranspose(MATRIX m);    
+    MATRIX AdjointMatrix(MATRIX m);
+    MATRIX InvMatrix(MATRIX m);
+    void MatrixToValue(MATRIX m, float* out);
 
 //Plane-------------------------------------------------------------------------------
 
-typedef struct MD_MATH_PLANE  
-{
-    float a,b,c,d;
-} MD_MATH_PLANE;
+    typedef struct PLANE  
+    {
+        float a,b,c,d;
+    } PLANE;
 
-MD_MATH_PLANE MD_Math_PlaneFromPointAndNormal(MD_MATH_VECTOR3 Point,MD_MATH_VECTOR3 Normal);
+    PLANE PlaneFromPointAndNormal(VECTOR3 Point,VECTOR3 Normal);
 
-MD_MATH_PLANE MD_Math_PlaneFromPoints(MD_MATH_VECTOR3 p0,
-                                      MD_MATH_VECTOR3 p1,
-                                      MD_MATH_VECTOR3 p2);
+    PLANE PlaneFromPoints(VECTOR3 p0,
+                          VECTOR3 p1,
+                          VECTOR3 p2);
 									  
-float MD_Math_PlaneDot(MD_MATH_PLANE p, MD_MATH_VECTOR3 v);
-MD_MATH_PLANE MD_Math_PlaneNormalize(MD_MATH_PLANE p);
-MD_MATH_PLANE MD_Math_PlaneTransform(MD_MATH_PLANE p, MD_MATH_MATRIX m);
+    float PlaneDot(PLANE p, VECTOR3 v);
+    PLANE PlaneNormalize(PLANE p);
+    PLANE PlaneTransform(PLANE p, MATRIX m);
 
 //Ray-----------------------------------------------------------------
 
-typedef struct MD_MATH_RAY
-{
-    MD_MATH_VECTOR3 p0,u;
-} MD_MATH_RAY;
+    typedef struct RAY
+    {
+        VECTOR3 p0,u;
+    } RAY;
 
 
-MD_MATH_VECTOR3 MD_Math_CreateRay(MD_MATH_RAY ray,float t);
-MD_MATH_VECTOR3 MD_Math_Intersection(MD_MATH_RAY ray, MD_MATH_PLANE p);
+    VECTOR3 CreateRay(RAY ray,float t);
+    VECTOR3 Intersection(RAY ray, PLANE p);
 	
-MD_MATH_MATRIX MD_Math_ScaleMatrix(float x, float y, float z);
-MD_MATH_MATRIX MD_Math_TranslationMatrix(float x, float y, float z);
-MD_MATH_MATRIX MD_Math_RotationMatrix(float Angle, char Axis);
+    MATRIX ScaleMatrix(float x, float y, float z);
+    MATRIX TranslationMatrix(float x, float y, float z);
+    MATRIX RotationMatrix(float Angle, char Axis);
 	
-MD_MATH_MATRIX MD_Math_PerspectiveMatrixRH(float fovy, float aspect, float zNear, float zFar);	
-MD_MATH_MATRIX MD_Math_OrthoMatrixRH(float l, float r, float b, float t, float n, float f);	
-MD_MATH_MATRIX MD_Math_ViewMatrixRH(MD_MATH_VECTOR3 eye, MD_MATH_VECTOR3 target, MD_MATH_VECTOR3 up);	
+    MATRIX PerspectiveMatrixRH(float fovy, float aspect, float zNear, float zFar);	
+    MATRIX OrthoMatrixRH(float l, float r, float b, float t, float n, float f);	
+    MATRIX ViewMatrixRH(VECTOR3 eye, VECTOR3 target, VECTOR3 up);	
 	
-MD_MATH_MATRIX MD_Math_PerspectiveMatrixLH(float fovy, float aspect, float zNear, float zFar);
-MD_MATH_MATRIX MD_Math_OrthoMatrixLH(float l, float r, float b, float t, float n, float f);
-MD_MATH_MATRIX MD_Math_ViewMatrixLH(MD_MATH_VECTOR3 eye, MD_MATH_VECTOR3 target, MD_MATH_VECTOR3 up);
+    MATRIX PerspectiveMatrixLH(float fovy, float aspect, float zNear, float zFar);
+    MATRIX OrthoMatrixLH(float l, float r, float b, float t, float n, float f);
+    MATRIX ViewMatrixLH(VECTOR3 eye, VECTOR3 target, VECTOR3 up);
 
-MD_MATH_MATRIX MD_Math_ReflectMatrix(MD_MATH_PLANE p);	
-MD_MATH_MATRIX MD_Math_Shadow(MD_MATH_VECTOR4 Light, MD_MATH_PLANE p);	
-
-#ifdef __cplusplus
+    MATRIX ReflectMatrix(PLANE p);	
+    MATRIX ShadowMatrix(VECTOR4 Light, PLANE p);	
 }
-#endif
 
 #endif

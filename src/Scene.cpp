@@ -9,22 +9,23 @@
 #include <glad/glad.h>
 
 extern int run;
+using namespace MD_Math;
 
-MD_MATH_MATRIX model = MD_Math_IdentityMatrix;
-MD_MATH_MATRIX projection = MD_Math_PerspectiveMatrixRH(
-    MD_Math_AngularToRadian(45.0f),
+MATRIX model = IdentityMatrix();
+MATRIX projection = PerspectiveMatrixRH(
+    AngularToRadian(45.0f),
     (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT,
     0.1f,
     100.0f
 );
 
-MD_MATH_VECTOR3 cameraPos = {0.0f, 0.0f,  3.0f};
-MD_MATH_VECTOR3 cameraFront = {0.0f, 0.0f, -1.0f};
-MD_MATH_VECTOR3 cameraUp = {0.0f, 1.0f,  0.0f};
+VECTOR3 cameraPos = {0.0f, 0.0f,  3.0f};
+VECTOR3 cameraFront = {0.0f, 0.0f, -1.0f};
+VECTOR3 cameraUp = {0.0f, 1.0f,  0.0f};
 
-MD_MATH_MATRIX view = MD_Math_ViewMatrixRH(
+MATRIX view = ViewMatrixRH(
         cameraPos,
-        MD_Math_Vector3Addition(cameraPos, cameraFront),
+        cameraPos + cameraFront,
         cameraUp
     );
 
