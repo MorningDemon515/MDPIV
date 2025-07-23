@@ -241,6 +241,10 @@ namespace MD_Math{
     VECTOR2 ProjectionVector2(VECTOR2 v1, VECTOR2 v2);
     VECTOR3 ProjectionVector3(VECTOR3 v1, VECTOR3 v2);
     VECTOR4 ProjectionVector4(VECTOR4 v1, VECTOR4 v2);
+
+    float* Vector2ToValue(VECTOR2 v); //Remember to free up memory!
+    float* Vector3ToValue(VECTOR3 v); //Remember to free up memory!
+    float* Vector4ToValue(VECTOR4 v); //Remember to free up memory!
 //---------------------------------------------------------------------------------------------------------
 //About Matrix --------------------------------------------------------------------------------------------
 

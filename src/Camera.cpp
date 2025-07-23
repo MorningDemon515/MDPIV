@@ -74,3 +74,8 @@ MD_Math::MATRIX Camera::Matrix()
 
     return view;
 }
+
+MD_Math::VECTOR3 Camera::Pos()
+{
+    return cameraPos;
+}

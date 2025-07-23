@@ -2,11 +2,32 @@
 
 out vec4 Color;
 
+uniform vec3 LightPos;
 uniform vec3 LightColor;
 uniform vec3 CubeColor;
 
+uniform vec3 cameraPos;
+
+in vec3 Normal;
+in vec3 FragPos;
+
 void main()
 {
-  
-   Color = vec4(LightColor * CubeColor, 1.0f);
+   vec3 ambient = LightColor * 0.1f;
+
+   vec3 norm = normalize(Normal);
+   vec3 LightDir = normalize(LightPos - FragPos);
+   float diff = max((dot(norm, LightDir)), 0.0f);
+
+   vec3 diffuse = diff * LightColor;
+
+   vec3 viewDir = normalize(cameraPos - FragPos);
+   vec3 reflectDir = reflect(-LightDir, norm);
+   float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+
+   vec3 specular = 0.5f * spec * LightColor;
+
+   vec3 result = (ambient + diffuse + specular) * CubeColor;
+   Color = vec4(result, 1.0f);
+ 
 }

@@ -10,7 +10,6 @@ private:
    MD_Math::VECTOR3 cameraPos = {0.0f, 0.0f,  3.0f};
    MD_Math::VECTOR3 cameraFront = {0.0f, 0.0f, -1.0f};
    MD_Math::VECTOR3 cameraUp = {0.0f, 1.0f,  0.0f};
-
    //float lastX = WINDOW_WIDTH / 2 , lastY = WINDOW_HEIGHT / 2;
 
    //POINT Cp = {0, 0};
@@ -27,6 +26,8 @@ public:
     void Look();
     MD_Math::MATRIX Matrix();
 
+    MD_Math::VECTOR3 Pos();
+    
 };
 
 

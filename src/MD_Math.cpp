@@ -1117,6 +1117,36 @@ namespace MD_Math{
         return r * ProjectionOfVector4(v1,v2);
     }
 
+    float* Vector2ToValue(VECTOR2 v)
+    {
+        float* temp = new float[2];
+        temp[0] = v.x;
+        temp[1] = v.y;
+
+        return temp;
+    }
+
+    float* Vector3ToValue(VECTOR3 v)
+    {
+        float* temp = new float[3];
+        temp[0] = v.x;
+        temp[1] = v.y;
+        temp[2] = v.z;
+
+        return temp;
+    }
+
+    float* Vector4ToValue(VECTOR4 v)
+    {
+        float* temp = new float[4];
+        temp[0] = v.x;
+        temp[1] = v.y;
+        temp[2] = v.z;
+        temp[3] = v.w;
+
+        return temp;
+    }
+
     MATRIX MatrixTranspose(MATRIX m)
     {
         MATRIX r;
