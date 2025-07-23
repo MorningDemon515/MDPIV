@@ -64,6 +64,19 @@ float points_2[] = {
     -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f,
 };
 
+VECTOR3 cube_Positions[] = {
+    VECTOR3( 0.0f,  0.0f,  0.0f),
+    VECTOR3( 2.0f,  5.0f, -15.0f),
+    VECTOR3(-1.5f, -2.2f, -2.5f),
+    VECTOR3(-3.8f, -2.0f, -12.3f),
+    VECTOR3( 2.4f, -0.4f, -3.5f),
+    VECTOR3(-1.7f,  3.0f, -7.5f),
+    VECTOR3( 1.3f, -2.0f, -2.5f),
+    VECTOR3( 1.5f,  2.0f, -2.5f),
+    VECTOR3( 1.5f,  0.2f, -1.5f),
+    VECTOR3(-1.3f,  1.0f, -1.5f)
+};
+
 Shader s_cube = Shader();
 Shader l_cube = Shader();
 
@@ -86,7 +99,12 @@ Scene2::~Scene2()
    glDeleteTextures(1, &texture);
 }
 
-MATRIX CUBE_Model = IdentityMatrix();
+MATRIX modellation
+, modelangle_X
+, modelangle_Y
+, modelangle_Z
+,model_;
+
 MATRIX Light_Model = TranslationMatrix(LightPos.x, LightPos.y, LightPos.z) * 
                 ScaleMatrix(0.5f, 0.5f, 0.5f);
 
@@ -104,8 +122,8 @@ Material CubeMaterial = {
     32.0f
 };
 
-Light la = {
-    LightPos,
+DirectionLight la = {
+    {-0.2f, -1.0f, -0.3f},
 
     {0.2f, 0.2f, 0.2f},
     {0.5f, 0.5f, 0.5f},
@@ -188,7 +206,6 @@ void Scene2::Render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     s_cube.Use();
-    s_cube.SetMatrix("model", CUBE_Model);
     s_cube.SetMatrix("projection", Projection);
     s_cube.SetMatrix("view", camera_2.Matrix());
     s_cube.SetVec3("LightColor", Light_Color);
@@ -197,15 +214,32 @@ void Scene2::Render()
     s_cube.SetVec3("material.diffuse",CubeMaterial.diffuse);
     s_cube.SetVec3("material.specular",CubeMaterial.specular);
     s_cube.SetFloat("material.shininess",CubeMaterial.shininess);
-    s_cube.SetVec3("light.position",  la.position);
+    s_cube.SetVec3("light.direction",  la.direction);
     s_cube.SetVec3("light.ambient",  la.ambient);
     s_cube.SetVec3("light.diffuse",  la.diffuse); 
     s_cube.SetVec3("light.specular", la.specular); 
-    
+
     glBindTexture(GL_TEXTURE_2D, texture);
     glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
 
+    for (unsigned int i = 0; i < 10; i++)
+    {
+         
+        modellation = TranslationMatrix(cube_Positions[i].x , cube_Positions[i].y, cube_Positions[i].z);
+        float angle = 20.0f * i;
+        modelangle_X = RotationMatrix(AngularToRadian(angle), 'X');
+        modelangle_Y = RotationMatrix(AngularToRadian(angle), 'Y');
+        modelangle_Z = RotationMatrix(AngularToRadian(angle), 'Z');
+
+        modelangle_Y *= 0.3f;
+        modelangle_Z *= 0.5f;
+
+        model_ = modellation * modelangle_X * modelangle_Y * modelangle_Z ;
+        s_cube.SetMatrix("model", model_);
+
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
+    
     l_cube.Use();
     l_cube.SetMatrix("model", Light_Model);
     l_cube.SetMatrix("projection", Projection);

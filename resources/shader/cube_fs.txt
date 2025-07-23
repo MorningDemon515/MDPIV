@@ -19,7 +19,16 @@ struct Light{
    vec3 specular;
 };
 
-uniform Light light;
+struct DirectionLight
+{
+   vec3 direction;
+
+   vec3 ambient;
+   vec3 diffuse;
+   vec3 specular;
+};
+
+uniform DirectionLight light;
 
 uniform vec3 cameraPos;
 uniform vec3 LightColor;
@@ -38,7 +47,8 @@ void main()
    vec3 ambient = LightColor * light.ambient * texColor;
 
    vec3 norm = normalize(Normal);
-   vec3 LightDir = normalize(light.position - FragPos);
+   //vec3 LightDir = normalize(light.position - FragPos);
+   vec3 LightDir = normalize(-light.direction);
    float diff = max((dot(norm, LightDir)), 0.0f);
 
    //vec3 diffuse = diff * material.diffuse * LightColor * light.diffuse;
