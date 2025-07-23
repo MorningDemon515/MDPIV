@@ -235,6 +235,14 @@ void Scene2::Render()
     s_cube.SetVec3("material.specular",CubeMaterial.specular);
     s_cube.SetFloat("material.shininess",CubeMaterial.shininess);
     s_cube.SetVec3("light.position",  la.position);
+    
+    Light_Color.x = Sin((float)timeGetTime() * 0.001f * 2.0f);
+    Light_Color.y = Sin((float)timeGetTime() * 0.001f *0.7f);
+    Light_Color.z = Sin((float)timeGetTime() * 0.001f *1.3f);
+    
+    la.diffuse = Light_Color * 0.5f;
+    la.ambient = la.diffuse * 0.2f;
+    
     s_cube.SetVec3("light.ambient",  la.ambient);
     s_cube.SetVec3("light.diffuse",  la.diffuse); 
     s_cube.SetVec3("light.specular", la.specular); 
