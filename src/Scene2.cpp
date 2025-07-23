@@ -3,8 +3,9 @@
 #include "Texture.h"
 #include "SimpleInput.h"
 #include "Shader.h"
-
 #include "Camera.h"
+#include "Material.h"
+#include "Light.h"
 
 #include <glad/glad.h>
 
@@ -69,7 +70,7 @@ Shader l_cube = Shader();
 Camera camera_2 = Camera();
 
 VECTOR3 Light_Color(1.0f, 1.0f, 1.0f);
-VECTOR3 Cube_Color(1.0f, 0.5f, 0.0f);
+VECTOR3 LightPos(1.2f, 1.0f, 2.0f);
 
 Scene2::Scene2()
 {
@@ -85,7 +86,7 @@ Scene2::~Scene2()
 }
 
 MATRIX CUBE_Model = IdentityMatrix();
-MATRIX Light_Model = TranslationMatrix(1.2f, 1.0f, 2.0f) * 
+MATRIX Light_Model = TranslationMatrix(LightPos.x, LightPos.y, LightPos.z) * 
                 ScaleMatrix(0.5f, 0.5f, 0.5f);
 
 MATRIX Projection = PerspectiveMatrixRH(
@@ -138,6 +139,22 @@ VECTOR3 NormalVec3[36] = {
     VECTOR3(0.0f, 1.0f, 0.0f),
     VECTOR3(0.0f, 1.0f, 0.0f)
 };
+
+Material CubeMaterial = {
+    {1.0f, 0.5f, 0.31f},
+    {1.0f, 0.5f, 0.31f},
+    {0.5f, 0.5f, 0.5f},
+    32.0f
+};
+
+Light la = {
+    LightPos,
+
+    {0.2f, 0.2f, 0.2f},
+    {0.5f, 0.5f, 0.5f},
+    {1.0f, 1.0f, 1.0f}
+};
+
 
 void Scene2::InitEnv()
 {
@@ -211,10 +228,16 @@ void Scene2::Render()
     s_cube.SetMatrix("model", CUBE_Model);
     s_cube.SetMatrix("projection", Projection);
     s_cube.SetMatrix("view", camera_2.Matrix());
-    s_cube.SetVec3("LightPos", VECTOR3(1.2f, 1.0f, 2.0f));
     s_cube.SetVec3("LightColor", Light_Color);
-    s_cube.SetVec3("CubeColor", Cube_Color);
     s_cube.SetVec3("cameraPos",camera_2.Pos());
+    s_cube.SetVec3("material.ambient",CubeMaterial.ambient);
+    s_cube.SetVec3("material.diffuse",CubeMaterial.diffuse);
+    s_cube.SetVec3("material.specular",CubeMaterial.specular);
+    s_cube.SetFloat("material.shininess",CubeMaterial.shininess);
+    s_cube.SetVec3("light.position",  la.position);
+    s_cube.SetVec3("light.ambient",  la.ambient);
+    s_cube.SetVec3("light.diffuse",  la.diffuse); 
+    s_cube.SetVec3("light.specular", la.specular); 
 
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 36);
