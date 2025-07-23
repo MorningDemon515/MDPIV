@@ -122,12 +122,20 @@ Material CubeMaterial = {
     32.0f
 };
 
-DirectionLight la = {
-    {-0.2f, -1.0f, -0.3f},
+SpotLight la = {
+    camera_2.Pos(),
+    camera_2.Front(),   
 
-    {0.2f, 0.2f, 0.2f},
-    {0.5f, 0.5f, 0.5f},
-    {1.0f, 1.0f, 1.0f}
+    Cos(AngularToRadian(12.5f)),    
+    Cos(AngularToRadian(17.5f)),
+    
+    {0.2f, 0.2f, 0.2f},   
+    {0.5f, 0.5f, 0.5f},   
+    {1.0f, 1.0f, 1.0f},   
+
+    1.0f,                  
+    0.09f,                
+    0.032f                
 };
 
 
@@ -204,20 +212,31 @@ void Scene2::Render()
 
     glClearColor(0.3f, 0.3f, 0.3f, 1.0f);  
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    la.position = camera_2.Pos();
+    la.direction = camera_2.Front();
     
     s_cube.Use();
     s_cube.SetMatrix("projection", Projection);
     s_cube.SetMatrix("view", camera_2.Matrix());
     s_cube.SetVec3("LightColor", Light_Color);
     s_cube.SetVec3("cameraPos",camera_2.Pos());
+    
     s_cube.SetVec3("material.ambient",CubeMaterial.ambient);
     s_cube.SetVec3("material.diffuse",CubeMaterial.diffuse);
     s_cube.SetVec3("material.specular",CubeMaterial.specular);
     s_cube.SetFloat("material.shininess",CubeMaterial.shininess);
+
+    s_cube.SetVec3("light.position",  la.position);
     s_cube.SetVec3("light.direction",  la.direction);
     s_cube.SetVec3("light.ambient",  la.ambient);
     s_cube.SetVec3("light.diffuse",  la.diffuse); 
     s_cube.SetVec3("light.specular", la.specular); 
+    s_cube.SetFloat("light.cutOff", la.cutOff);
+    s_cube.SetFloat("light.outerCutOff", la.outerCutOff); 
+    s_cube.SetFloat("light.constant",  la.constant);
+    s_cube.SetFloat("light.linear",    la.linear);
+    s_cube.SetFloat("light.quadratic", la.quadratic);
 
     glBindTexture(GL_TEXTURE_2D, texture);
     glBindVertexArray(VAO);

@@ -79,3 +79,8 @@ MD_Math::VECTOR3 Camera::Pos()
 {
     return cameraPos;
 }
+
+MD_Math::VECTOR3 Camera::Front()
+{
+    return cameraFront;
+}

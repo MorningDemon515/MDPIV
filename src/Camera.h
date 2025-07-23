@@ -27,6 +27,7 @@ public:
     MD_Math::MATRIX Matrix();
 
     MD_Math::VECTOR3 Pos();
+    MD_Math::VECTOR3 Front();
     
 };
 
