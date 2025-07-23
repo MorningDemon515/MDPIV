@@ -20,48 +20,48 @@ VECTOR3 ComputerNormal(VECTOR3* p0,VECTOR3* p1, VECTOR3* p2 )
     return Vector3Normalized(VectorCross(u, v));
 }
 
-VECTOR3 points_vec3[] = {
-    VECTOR3(-0.5f, -0.5f, -0.5f), 
-	VECTOR3(0.5f, -0.5f, -0.5f),  
-	VECTOR3(0.5f,  0.5f, -0.5f),  
-	VECTOR3(0.5f,  0.5f, -0.5f),  
-	VECTOR3(-0.5f,  0.5f, -0.5f),  
-	VECTOR3(-0.5f, -0.5f, -0.5f),  
-	
-	VECTOR3(-0.5f, -0.5f,  0.5f),  
-	VECTOR3(0.5f, -0.5f,  0.5f),  
-	VECTOR3(0.5f,  0.5f,  0.5f),  
-	VECTOR3(0.5f,  0.5f,  0.5f),  
-	VECTOR3(-0.5f,  0.5f,  0.5f), 
-	VECTOR3(-0.5f, -0.5f,  0.5f),  
-	
-	VECTOR3(-0.5f,  0.5f,  0.5f),  
-	VECTOR3(-0.5f,  0.5f, -0.5f), 
-	VECTOR3(-0.5f, -0.5f, -0.5f), 
-	VECTOR3(-0.5f, -0.5f, -0.5f),  
-	VECTOR3(-0.5f, -0.5f,  0.5f),  
-	VECTOR3(-0.5f,  0.5f,  0.5f),  
-	
-	VECTOR3(0.5f,  0.5f,  0.5f),  
-	VECTOR3(0.5f,  0.5f, -0.5f),  
-	VECTOR3(0.5f, -0.5f, -0.5f),  
-	VECTOR3(0.5f, -0.5f, -0.5f),  
-	VECTOR3(0.5f, -0.5f,  0.5f),  
-	VECTOR3(0.5f,  0.5f,  0.5f),  
-	
-	VECTOR3(-0.5f, -0.5f, -0.5f),  
-	VECTOR3(0.5f, -0.5f, -0.5f), 
-	VECTOR3(0.5f, -0.5f,  0.5f),  
-	VECTOR3(0.5f, -0.5f,  0.5f),  
-	VECTOR3(-0.5f, -0.5f,  0.5f),  
-	VECTOR3(-0.5f, -0.5f, -0.5f),  
-	
-	VECTOR3(-0.5f,  0.5f, -0.5f),  
-	VECTOR3(0.5f,  0.5f, -0.5f),  
-	VECTOR3(0.5f,  0.5f,  0.5f),  
-	VECTOR3(0.5f,  0.5f,  0.5f),
-	VECTOR3(-0.5f,  0.5f,  0.5f), 
-	VECTOR3(-0.5f,  0.5f, -0.5f)
+float points_2[] = {
+    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f,
+    0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f,
+    0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f,
+    0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f,
+
+    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,
+    0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f,
+    0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f,
+    0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,
+
+    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
+
+    0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
+    0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f,
+    0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
+    0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
+    0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f,
+    0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
+
+    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f,
+    0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f,
+    0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, 
+    0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f,
+
+    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f,
+    0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f,
+    0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f,
+    0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f,
 };
 
 Shader s_cube = Shader();
@@ -83,6 +83,7 @@ Scene2::~Scene2()
    glDeleteVertexArrays(1,&VAO);
   
    glDeleteVertexArrays(1,&LightVAO);
+   glDeleteTextures(1, &texture);
 }
 
 MATRIX CUBE_Model = IdentityMatrix();
@@ -95,50 +96,6 @@ MATRIX Projection = PerspectiveMatrixRH(
     0.1f,
     100.0f
 );
-
-VECTOR3 NormalVec3[36] = {
-    VECTOR3(0.0f, 0.0f, -1.0f),
-    VECTOR3(0.0f, 0.0f, -1.0f),
-    VECTOR3(0.0f, 0.0f, -1.0f),
-    VECTOR3(0.0f, 0.0f, -1.0f),
-    VECTOR3(0.0f, 0.0f, -1.0f),
-    VECTOR3(0.0f, 0.0f, -1.0f),
-
-    VECTOR3(0.0f, 0.0f, 1.0f),
-    VECTOR3(0.0f, 0.0f, 1.0f),
-    VECTOR3(0.0f, 0.0f, 1.0f),
-    VECTOR3(0.0f, 0.0f, 1.0f),
-    VECTOR3(0.0f, 0.0f, 1.0f),
-    VECTOR3(0.0f, 0.0f, 1.0f),
-
-    VECTOR3(-1.0f, 0.0f, 0.0f),
-    VECTOR3(-1.0f, 0.0f, 0.0f),
-    VECTOR3(-1.0f, 0.0f, 0.0f),
-    VECTOR3(-1.0f, 0.0f, 0.0f),
-    VECTOR3(-1.0f, 0.0f, 0.0f),
-    VECTOR3(-1.0f, 0.0f, 0.0f),
-
-    VECTOR3(1.0f, 0.0f, 0.0f),
-    VECTOR3(1.0f, 0.0f, 0.0f),
-    VECTOR3(1.0f, 0.0f, 0.0f),
-    VECTOR3(1.0f, 0.0f, 0.0f),
-    VECTOR3(1.0f, 0.0f, 0.0f),
-    VECTOR3(1.0f, 0.0f, 0.0f),
-
-    VECTOR3(0.0f, -1.0f, 0.0f),
-    VECTOR3(0.0f, -1.0f, 0.0f),
-    VECTOR3(0.0f, -1.0f, 0.0f),
-    VECTOR3(0.0f, -1.0f, 0.0f),
-    VECTOR3(0.0f, -1.0f, 0.0f),
-    VECTOR3(0.0f, -1.0f, 0.0f),
-
-    VECTOR3(0.0f, 1.0f, 0.0f),
-    VECTOR3(0.0f, 1.0f, 0.0f),
-    VECTOR3(0.0f, 1.0f, 0.0f),
-    VECTOR3(0.0f, 1.0f, 0.0f),
-    VECTOR3(0.0f, 1.0f, 0.0f),
-    VECTOR3(0.0f, 1.0f, 0.0f)
-};
 
 Material CubeMaterial = {
     {1.0f, 0.5f, 0.31f},
@@ -173,6 +130,7 @@ void Scene2::InitEnv()
         NormalVec3[i + 2] = temp;
     }*/
     
+    /*
     float points_2[216]; 
 
     for (int i = 0, j = 0; i < 36; i++, j += 6)
@@ -184,7 +142,7 @@ void Scene2::InitEnv()
         points_2[j + 3] = NormalVec3[i].x;
         points_2[j + 4] = NormalVec3[i].y;
         points_2[j + 5] = NormalVec3[i].z;
-    }
+    }*/
     
     glGenVertexArrays(1,&VAO);
     glBindVertexArray(VAO);
@@ -193,22 +151,27 @@ void Scene2::InitEnv()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(points_2), points_2, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     glGenVertexArrays(1, &LightVAO);
     glBindVertexArray(LightVAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
     s_cube.LoadFile("resources/shader/cube_vs.txt", "resources/shader/cube_fs.txt");
     l_cube.LoadFile("resources/shader/cube_vs.txt", "resources/shader/cube_light_fs.txt");
+
+    texture = T_LoadTextureRGB("resources/image.jpg");
 }
 
 void Scene2::Render()
@@ -235,18 +198,11 @@ void Scene2::Render()
     s_cube.SetVec3("material.specular",CubeMaterial.specular);
     s_cube.SetFloat("material.shininess",CubeMaterial.shininess);
     s_cube.SetVec3("light.position",  la.position);
-    
-    Light_Color.x = Sin((float)timeGetTime() * 0.001f * 2.0f);
-    Light_Color.y = Sin((float)timeGetTime() * 0.001f *0.7f);
-    Light_Color.z = Sin((float)timeGetTime() * 0.001f *1.3f);
-    
-    la.diffuse = Light_Color * 0.5f;
-    la.ambient = la.diffuse * 0.2f;
-    
     s_cube.SetVec3("light.ambient",  la.ambient);
     s_cube.SetVec3("light.diffuse",  la.diffuse); 
     s_cube.SetVec3("light.specular", la.specular); 
-
+    
+    glBindTexture(GL_TEXTURE_2D, texture);
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 36);
 

@@ -27,15 +27,22 @@ uniform vec3 LightColor;
 in vec3 Normal;
 in vec3 FragPos;
 
+uniform sampler2D Texture;
+in vec2 TexCoord;
+
 void main()
 {
-   vec3 ambient = LightColor * light.ambient * material.ambient;
+   vec3 texColor = vec3(texture(Texture, TexCoord));
+
+   //vec3 ambient = LightColor * light.ambient * material.ambient;
+   vec3 ambient = LightColor * light.ambient * texColor;
 
    vec3 norm = normalize(Normal);
    vec3 LightDir = normalize(light.position - FragPos);
    float diff = max((dot(norm, LightDir)), 0.0f);
 
-   vec3 diffuse = diff * material.diffuse * LightColor * light.diffuse;
+   //vec3 diffuse = diff * material.diffuse * LightColor * light.diffuse;
+   vec3 diffuse = diff * texColor * LightColor * light.diffuse;
 
    vec3 viewDir = normalize(cameraPos - FragPos);
    vec3 reflectDir = reflect(-LightDir, norm);

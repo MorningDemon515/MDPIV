@@ -6,6 +6,7 @@ class Scene2
 private:
     unsigned int VBO, VAO;
     unsigned int LightVAO;
+    unsigned int texture;
 public:
     Scene2();
     ~Scene2();

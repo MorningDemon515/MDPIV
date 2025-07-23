@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 
-void T_SetTextureRGB(const char* file)
+unsigned int T_LoadTextureRGB(const char* file)
 {
     unsigned int texture;
     int width, height, channels;
@@ -42,9 +42,10 @@ void T_SetTextureRGB(const char* file)
     glGenerateMipmap(GL_TEXTURE_2D);
 
     stbi_image_free(data);
+    return texture;
 }
 
-void T_SetTextureRGBA(const char* file)
+unsigned int T_LoadTextureRGBA(const char* file)
 {
     unsigned int texture;
     int width, height, channels;
@@ -76,6 +77,7 @@ void T_SetTextureRGBA(const char* file)
     glGenerateMipmap(GL_TEXTURE_2D);
 
     stbi_image_free(data);
+    return texture;
 }
 
 #ifdef __cplusplus

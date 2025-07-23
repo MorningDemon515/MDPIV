@@ -116,7 +116,7 @@ void Scene::InitEnv()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 *sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    T_SetTextureRGB("resources/image.jpg");
+    texture =  T_LoadTextureRGB("resources/image.jpg");
     
     shader.LoadFile("resources/shader/texture_vs.txt",
                     "resources/shader/texture_fs.txt");
@@ -146,6 +146,8 @@ void Scene::Render()
 
     glClearColor(0.3f, 0.3f, 0.3f, 1.0f);  
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    glBindTexture(GL_TEXTURE_2D, texture);
 
     for (unsigned int i = 0; i < 10; i++)
     {

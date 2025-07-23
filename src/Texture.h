@@ -5,8 +5,8 @@
 extern "C" {
 #endif
 
-void T_SetTextureRGB(const char* file);
-void T_SetTextureRGBA(const char* file);
+unsigned int T_LoadTextureRGB(const char* file);
+unsigned int T_LoadTextureRGBA(const char* file);
 
 #ifdef __cplusplus
 }
