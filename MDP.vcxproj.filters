@@ -16,6 +16,9 @@
     <Filter Include="OpenGL3.3">
       <UniqueIdentifier>{d2b16c04-384c-420a-b45a-6dcd8cf8c95c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Direct3D9">
+      <UniqueIdentifier>{f79b48a4-8c5e-4dd2-a268-8f76bade2b36}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -33,6 +36,15 @@
     <ClCompile Include="src\Input.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\Window.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OpenGL3.3\Renderer_GL.cpp">
+      <Filter>OpenGL3.3</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Direct3D9\Renderer_D3D9.cpp">
+      <Filter>Direct3D9</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Main.h">
@@ -49,6 +61,21 @@
     </ClInclude>
     <ClInclude Include="src\Input.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Window.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\OpenGL3.3\Renderer_GL.h">
+      <Filter>OpenGL3.3</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Direct3D9\Renderer_D3D9.h">
+      <Filter>Direct3D9</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Direct3D9\ToD3DMatirx.h">
+      <Filter>Direct3D9</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
