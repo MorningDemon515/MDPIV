@@ -1,9 +1,0 @@
-Available renderer drivers:
-1. direct3d11
-2. direct3d12
-3. direct3d
-4. opengl
-5. opengles2
-6. vulkan
-7. gpu
-8. software
