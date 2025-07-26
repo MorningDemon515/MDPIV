@@ -1,4 +1,6 @@
 # MDPIV
 
-Enjoy :-)
+Only MinGW64!!!
+
+Enjoy :-) 
 
