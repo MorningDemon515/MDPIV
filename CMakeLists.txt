@@ -3,11 +3,16 @@ cmake_minimum_required(VERSION 3.16)
 project(MDPIV)
 
 add_executable(MDPIV 
+        resources.rc
+        src/glad/src/glad.c
+        src/LoadImage.c
+        src/Window.cpp
         src/Main.cpp)
 
 target_compile_options(MDPIV PRIVATE -O3)
 
-include_directories(${CMAKE_SOURCE_DIR}/src/glfw/include)
+include_directories(${CMAKE_SOURCE_DIR}/src/glfw/include
+                        ${CMAKE_SOURCE_DIR}/src/glad/include)
 
 target_link_libraries(MDPIV 
             ${CMAKE_SOURCE_DIR}/src/glfw/libglfw3.a
