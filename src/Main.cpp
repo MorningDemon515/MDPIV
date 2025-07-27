@@ -1,43 +1,35 @@
 
-#define GLAD_GL_IMPLEMENTATION
-#include <glad/glad.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
+#include "Window.h"
+#include "OGL/Renderer_GL.h"
 
-#include "LoadImage.h"
+#include <iostream>
+
+std::string title = "MDPIV";
 
 int main()
 {
-    GLFWwindow* window;
+    Window window = Window(800, 600);
+    window.SetTitle(title.c_str());
+    window.SetICON("resources/icon/MorningDemon.jpg");
 
-    glfwInit();
-    
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-    window = glfwCreateWindow(800, 600, "MDPIV", NULL, NULL);
+    Renderer* renderer = new Renderer_GL();
+    renderer->Init(window.window);
 
-    Image ico;
-    Load_Image_RGBA("resources/icon/MorningDemon.jpg", &ico);
-
-    GLFWimage icon;
-    icon.width = ico.width;
-    icon.height = ico.height;
-    icon.pixels = ico.pixels;
-    glfwSetWindowIcon(window, 1, &icon);
-
-    glfwMakeContextCurrent(window);
-    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-
-    while(!glfwWindowShouldClose(window))
+    while(window.Run())
     {
-        glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        glfwSwapBuffers(window);
-
-        glfwPollEvents();
+        int state = glfwGetKey(window.window, GLFW_KEY_ESCAPE);
+        if (state == GLFW_PRESS)
+        {
+            window.run = false;
+        }
+        
+        renderer->Clear(30, 30, 30);
+        
+        renderer->Present(window.window);
+        
+        window.Quit();
     }
     
-    glfwDestroyWindow(window);
-    glfwTerminate();
+    delete renderer;
     return 0;
 }

@@ -7,6 +7,8 @@ add_executable(MDPIV
         src/glad/src/glad.c
         src/LoadImage.c
         src/Window.cpp
+        src/OGL/Renderer_GL.cpp
+        src/D3D9/Renderer_D3D9.cpp
         src/Main.cpp)
 
 target_compile_options(MDPIV PRIVATE -O3)
@@ -16,7 +18,8 @@ include_directories(${CMAKE_SOURCE_DIR}/src/glfw/include
 
 target_link_libraries(MDPIV 
             ${CMAKE_SOURCE_DIR}/src/glfw/libglfw3.a
-            opengl32)
+            opengl32
+            d3d9)
 
 function(copy_dll_to_install target dst)
     set(SRC $<TARGET_FILE_DIR:${target}>/${target}.dll)
