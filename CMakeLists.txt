@@ -4,9 +4,12 @@ project(MDPIV)
 
 add_executable(MDPIV 
         resources.rc
+        src/MD_Math.cpp
         src/glad/src/glad.c
+        src/Input.c
         src/LoadImage.c
         src/Window.cpp
+        src/Shader.cpp
         src/OGL/Renderer_GL.cpp
         src/D3D9/Renderer_D3D9.cpp
         src/Main.cpp)
