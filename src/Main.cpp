@@ -34,8 +34,9 @@ Materials_Texture materials =
     32.0f
 };
 
-Light light = {
-    VECTOR3(1.2f, 1.0f, 2.0f),
+Light_Directional light = {
+    //VECTOR3(1.2f, 1.0f, 2.0f),
+    VECTOR3(-0.2f, -1.0f, -0.3f),
 
     VECTOR3(0.2f, 0.2f, 0.2f),
     VECTOR3(0.5f, 0.5f, 0.5f),
@@ -85,6 +86,19 @@ float vertices[] = {
          0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
         -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
+};
+
+VECTOR3 cube_Positions[] = {
+    VECTOR3( 0.0f,  0.0f,  0.0f),
+    VECTOR3( 2.0f,  5.0f, -15.0f),
+    VECTOR3(-1.5f, -2.2f, -2.5f),
+    VECTOR3(-3.8f, -2.0f, -12.3f),
+    VECTOR3( 2.4f, -0.4f, -3.5f),
+    VECTOR3(-1.7f,  3.0f, -7.5f),
+    VECTOR3( 1.3f, -2.0f, -2.5f),
+    VECTOR3( 1.5f,  2.0f, -2.5f),
+    VECTOR3( 1.5f,  0.2f, -1.5f),
+    VECTOR3(-1.3f,  1.0f, -1.5f)
 };
 
 int main()
@@ -162,8 +176,8 @@ int main()
     MATRIX model = IdentityMatrix();
     MATRIX NM = NormalMatrix(model);
 
-    MATRIX L_model = TranslationMatrix(light.Position.x, light.Position.y, light.Position.z) * 
-                    ScaleMatrix(0.2f, 0.2f, 0.2f);
+    //MATRIX L_model = TranslationMatrix(light.Position.x, light.Position.y, light.Position.z) * 
+      //              ScaleMatrix(0.2f, 0.2f, 0.2f);
     
     static double lastTime = glfwGetTime();
 
@@ -184,7 +198,6 @@ int main()
 
         renderer->Clear(30, 30, 30);
         shader.Use();
-        shader.SetMatrix("model", model);
         shader.SetMatrix("view", camera.Matrix());
         shader.SetMatrix("projection", projection);
         shader.SetMatrix("nm", NM);
@@ -196,7 +209,7 @@ int main()
         shader.SetVec3("materials.Specular", materials.Specular);
         shader.SetFloat("materials.Power", materials.Power);
 
-        shader.SetVec3("light.Position", light.Position);
+        shader.SetVec3("light.Direction", light.Direction);
         shader.SetVec3("light.Ambient", light.Ambient);
         shader.SetVec3("light.Diffuse", light.Diffuse);
         shader.SetVec3("light.Specular", light.Specular);
@@ -205,8 +218,17 @@ int main()
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
 
+        for (unsigned int i = 0; i < 10; i++)
+        {
+         
+            model = TranslationMatrix(cube_Positions[i].x , cube_Positions[i].y, cube_Positions[i].z);
+            shader.SetMatrix("model", model);
+
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
+
+/*
         L_shader.Use();
         L_shader.SetMatrix("model", L_model);
         L_shader.SetMatrix("view", camera.Matrix());
@@ -214,7 +236,7 @@ int main()
         
         glBindVertexArray(LightVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
-
+*/
         renderer->Present(window.window);
         
         window.Quit();
