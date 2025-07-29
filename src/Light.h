@@ -3,14 +3,18 @@
 
 #include "MD_Math.h"
 
-typedef struct Light
+typedef struct Light_Point
 {
     MD_Math::VECTOR3 Position;
 
     MD_Math::VECTOR3 Ambient;
     MD_Math::VECTOR3 Diffuse;
     MD_Math::VECTOR3 Specular;
-} Light;
+
+    float Constant;
+    float Linear;
+    float Quadratic;
+} Light_Point;
 
 typedef struct Light_Directional
 {
