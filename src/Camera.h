@@ -42,6 +42,12 @@ public:
         if(Input_IsKeyDown(GLFW_KEY_RIGHT))
             yaw += mouseSpeed;        
 
+        if(pitch > 89.0f)
+            pitch = 89.0f;
+
+        if(pitch < -89.0f)
+            pitch = -89.0f;    
+
         cameraFront.x = MD_Math::Cos(MD_Math::AngularToRadian(pitch)) * MD_Math::Cos(MD_Math::AngularToRadian(yaw));
         cameraFront.y = MD_Math::Sin(MD_Math::AngularToRadian(pitch));
         cameraFront.z = MD_Math::Cos(MD_Math::AngularToRadian(pitch)) * MD_Math::Sin(MD_Math::AngularToRadian(yaw));
@@ -55,6 +61,11 @@ public:
             cameraPos + cameraFront,
             cameraUp
         );
+    }
+
+    MD_Math::VECTOR3 Pos()
+    {
+        return cameraPos;
     }
 };
 
