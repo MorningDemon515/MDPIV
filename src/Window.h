@@ -11,6 +11,7 @@ private:
 public:
     GLFWwindow* window;
     bool run = true;
+    int width, height;
 
     Window(){};
     Window(int Width, int Height);

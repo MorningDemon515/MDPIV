@@ -8,6 +8,13 @@ Window::Window(int Width, int Height)
 
     glfwWindowHint(GLFW_RESIZABLE, false);
     window = glfwCreateWindow(Width, Height, "", NULL, NULL);
+    
+    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+    glfwSetWindowPos(window, mode->width /2 - Width / 2 , mode->height / 2 - Height / 2);
+
+    width = Width; height = Height;
 }
 
 Window::~Window()
