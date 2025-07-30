@@ -1,13 +1,5 @@
 #version 330 core
 
-out vec4 FragColor;
-
-uniform vec3 ViewPos;
-
-in vec3 Normal;
-in vec3 FragPos;
-in vec2 TexCoords;
-
 struct Materials
 {
     vec3 Diffuse;
@@ -23,10 +15,6 @@ struct Materials_Texture
 
     float Power;
 };
-
-uniform Materials_Texture materials;
-
-uniform sampler2D Texture;
 
 struct Light_Point
 {
@@ -66,141 +54,116 @@ struct Light_Spot
     float Quadratic;
 };
 
-uniform Light_Spot light;
+out vec4 FragColor;
+
+uniform vec3 ViewPos;
+
+in vec3 Normal;
+in vec3 FragPos;
+in vec2 TexCoords;
+
+uniform Materials_Texture materials;
+
+uniform sampler2D Texture;
+
+#define LIGHT_NUM 4
+
+uniform Light_Point light_point[LIGHT_NUM];
+uniform Light_Directional light_dir;
+uniform Light_Spot light_spot;
+
+vec3 DirLight(Light_Directional light, vec3 normal, vec3 viewDir);
+vec3 PointLight(Light_Point light, vec3 normal, vec3 viewDir, vec3 fragPos);
+vec3 SpotLight(Light_Spot light, vec3 normal, vec3 viewDir, vec3 fragPos);
+
+vec3 ObjectColor = texture(Texture, TexCoords).rgb;
 
 void main()
 {
-    vec3 LightDir = normalize(light.Position - FragPos);
-    vec3 CubeColor = vec3(texture(Texture, TexCoords));
+    
     vec3 norm = normalize(Normal);
     vec3 ViewDir = normalize(ViewPos - FragPos);
     
-    // 计算聚光灯的平滑强度
-    float theta = dot(LightDir, normalize(-light.Direction));
-    float epsilon = light.cutOff - light.outerCutOff;
-    float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
-    
-    // 环境光 (不受聚光灯方向影响)
-    vec3 ambient = light.Ambient * CubeColor;
-    
-    // 漫反射
-    float diff = max(dot(norm, LightDir), 0.0);
-    vec3 diffuse = light.Diffuse * diff * CubeColor;
-    
-    // 镜面反射
-    vec3 ReflectDir = reflect(-LightDir, norm);
-    float spec = pow(max(dot(ViewDir, ReflectDir), 0.0), materials.Power);
+    vec3 result = vec3(0.0f, 0.0f, 0.0f);
+
+    for(int i = 0; i < LIGHT_NUM; i++)
+    {
+      result += PointLight(light_point[i], norm , ViewDir, FragPos);     
+    }                   
+
+    result += SpotLight(light_spot, norm, ViewDir, FragPos);          
+
+    FragColor = vec4(result, 1.0);
+}
+
+vec3 DirLight(Light_Directional light, vec3 normal, vec3 viewDir)
+{
+    vec3 ambient = light.Ambient * ObjectColor;
+
+    vec3 LightDir = normalize(-light.Direction);
+
+    float diff = max(dot(normal, LightDir), 0.0);
+    vec3 diffuse = light.Diffuse * diff * ObjectColor;
+
+    vec3 ReflectDir = reflect(-LightDir, normal);
+
+    float spec = pow(max(dot(viewDir, ReflectDir), 0.0), materials.Power);
+    vec3 specular = light.Specular * spec * materials.Specular;
+
+    return (ambient + diffuse + specular);
+}
+
+vec3 PointLight(Light_Point light, vec3 normal, vec3 viewDir, vec3 fragPos)
+{
+    vec3 ambient = light.Ambient * ObjectColor;
+
+    vec3 LightDir = normalize(light.Position - fragPos);
+    float diff = max(dot(normal, LightDir),0.0);
+    vec3 diffuse = light.Diffuse * diff * ObjectColor;
+
+    vec3 ReflectDir = reflect(-LightDir, normal);
+    float spec = pow(max(dot(viewDir, ReflectDir), 0.0), materials.Power);
     vec3 specular = light.Specular * (spec * materials.Specular);
-    
-    // 衰减计算
-    float distance = length(light.Position - FragPos);
-    float attenuation = 1.0 / (light.Constant + light.Linear * distance + 
-                             light.Quadratic * (distance * distance));
-    
-    // 应用聚光灯强度和平滑过渡
-    diffuse *= intensity;
-    specular *= intensity;
-    
-    // 应用衰减
-    ambient *= attenuation;
-    diffuse *= attenuation;
-    specular *= attenuation;
-    
-    // 组合最终颜色
-    vec3 result = ambient + diffuse + specular;
-    FragColor = vec4(result, 1.0f);
-}
 
-/*
-void main()
-{
-      vec3 LightDir = normalize(light.Position - FragPos); // Light Direction
-      vec3 CubeColor = vec3(texture(Texture, TexCoords)); // Cube Color
-      float theta = dot(LightDir, normalize(-light.Direction));
-      if(light.cutOff < theta)
-      {
-            vec3 ambient = light.Ambient * CubeColor;
-
-            vec3 norm = normalize(Normal);
-            float diff = max(dot(norm, LightDir), 0.0);
-            vec3 diffuse = light.Diffuse * diff * CubeColor;
-
-            vec3 ViewDir = normalize(ViewPos - FragPos);
-            vec3 ReflectDir = reflect(-LightDir, norm);
-            float spec = pow(max(dot(ViewDir, ReflectDir), 0.0), materials.Power);
-            vec3 specular = light.Specular * (spec * materials.Specular);
-
-            float distance    = length(light.Position - FragPos);
-            float attenuation = 1.0 / (light.Constant + light.Linear * distance + 
-                                    light.Quadratic * (distance * distance));
-
-            //ambient  *= attenuation; 
-            diffuse  *= attenuation;
-            specular *= attenuation;
-
-            vec3 result = ambient + diffuse + specular;
-            FragColor = vec4(result, 1.0f);
-      }
-      else
-      {
-            FragColor = vec4(light.Ambient * CubeColor, 1.0f);
-      }
-}
-*/
-
-/*
-void main()
-{
-      // Ambient 
-      vec3 ambient = light.Ambient * vec3(texture(Texture, TexCoords));
-
-      // Normal And Light Direction
-      vec3 norm = normalize(Normal);
-      //vec3 LightDir = normalize(-light.Direction);
-      vec3 LightDir = normalize(light.Position - FragPos);
- 
-      // Attenuation
-      float distance    = length(light.Position - FragPos);
+     float distance    = length(light.Position - fragPos);
       float attenuation = 1.0 / (light.Constant + light.Linear * distance + 
                 light.Quadratic * (distance * distance));
 
-      // Diffuse and Specular
-      float diff = max(dot(norm , LightDir), 0.0);
-      vec3 diffuse = light.Diffuse * (diff * vec3(texture(Texture, TexCoords)));
-
-      vec3 ViewDir = normalize(ViewPos - FragPos);
-      vec3 ReflectDir = reflect(-LightDir, norm);
-
-      float spec = pow(max(dot(ViewDir, ReflectDir), 0.0), materials.Power);
-      vec3 specular = light.Specular * (spec * materials.Specular);
-      
       ambient  *= attenuation; 
       diffuse  *= attenuation;
-      specular *= attenuation;
+      specular *= attenuation;    
 
-      vec3 result = ambient + diffuse + specular;
-      FragColor = vec4(result, 1.0f);
+      return (ambient + diffuse + specular);
 }
-*/
 
-/*
-void main()
+vec3 SpotLight(Light_Spot light, vec3 normal, vec3 viewDir, vec3 fragPos)
 {
-      vec3 ambient = light.Ambient * vec3(texture(Texture, TexCoords));
+    vec3 LightDir = normalize(light.Position - fragPos);
 
-      vec3 norm = normalize(Normal);
-      vec3 LightDir = normalize(light.Position - FragPos);
+    float theta = dot(LightDir, normalize(-light.Direction));
+    float epsilon = light.cutOff - light.outerCutOff;
+    float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
 
-      float diff = max(dot(norm , LightDir), 0.0);
-      vec3 diffuse = light.Diffuse * (diff * vec3(texture(Texture, TexCoords)));
+    vec3 ambient = light.Ambient * ObjectColor;
 
-      vec3 ViewDir = normalize(ViewPos - FragPos);
-      vec3 ReflectDir = reflect(-LightDir, norm);
+    float diff = max(dot(normal, LightDir), 0.0);
+    vec3 diffuse = light.Diffuse * diff * ObjectColor;
 
-      float spec = pow(max(dot(ViewDir, ReflectDir), 0.0), materials.Power);
-      vec3 specular = light.Specular * (spec * materials.Specular);
+    vec3 ReflectDir = reflect(-LightDir, normal);
+    float spec = pow(max(dot(viewDir, ReflectDir), 0.0), materials.Power);
+    vec3 specular = light.Specular * (spec * materials.Specular);
 
-      vec3 result = ambient + diffuse + specular;
-      FragColor = vec4(result, 1.0f);
+    float distance = length(light.Position - fragPos);
+    float attenuation = 1.0 / (light.Constant + light.Linear * distance + 
+                             light.Quadratic * (distance * distance));
+
+    diffuse *= intensity;
+    specular *= intensity;
+
+    ambient *= attenuation;
+    diffuse *= attenuation;
+    specular *= attenuation;
+
+    return (ambient + diffuse + specular);   
 }
-*/
+
