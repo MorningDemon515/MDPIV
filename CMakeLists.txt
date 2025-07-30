@@ -17,10 +17,13 @@ add_executable(MDPIV
 target_compile_options(MDPIV PRIVATE -O3)
 
 include_directories(${CMAKE_SOURCE_DIR}/src/glfw/include
-                        ${CMAKE_SOURCE_DIR}/src/glad/include)
+                        ${CMAKE_SOURCE_DIR}/src/glad/include
+                        ${CMAKE_SOURCE_DIR}/src/assimp/include)
 
 target_link_libraries(MDPIV 
             ${CMAKE_SOURCE_DIR}/src/glfw/libglfw3.a
+            ${CMAKE_SOURCE_DIR}/src/assimp/lib/libassimp.dll.a
+            ${CMAKE_SOURCE_DIR}/src/assimp/lib/libunit.dll.a
             opengl32
             d3d9)
 

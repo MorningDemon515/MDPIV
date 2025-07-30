@@ -80,7 +80,7 @@ vec3 ObjectColor = texture(Texture, TexCoords).rgb;
 
 void main()
 {
-    
+    /*
     vec3 norm = normalize(Normal);
     vec3 ViewDir = normalize(ViewPos - FragPos);
     
@@ -94,6 +94,9 @@ void main()
     result += SpotLight(light_spot, norm, ViewDir, FragPos);          
 
     FragColor = vec4(result, 1.0);
+    */
+
+    FragColor = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 }
 
 vec3 DirLight(Light_Directional light, vec3 normal, vec3 viewDir)
