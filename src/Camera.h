@@ -67,6 +67,11 @@ public:
     {
         return cameraPos;
     }
+
+    MD_Math::VECTOR3 Front()
+    {
+        return cameraFront;
+    }
 };
 
 Camera::Camera()

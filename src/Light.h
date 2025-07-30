@@ -25,4 +25,20 @@ typedef struct Light_Directional
     MD_Math::VECTOR3 Specular;
 } Light_Directional;
 
+typedef struct Light_Spot
+{
+    MD_Math::VECTOR3 Position;
+    MD_Math::VECTOR3 Direction;
+    float cutOff;
+    float outerCutOff;
+
+    MD_Math::VECTOR3 Ambient;
+    MD_Math::VECTOR3 Diffuse;
+    MD_Math::VECTOR3 Specular;
+
+    float Constant;
+    float Linear;
+    float Quadratic;
+} Light_Spot;
+
 #endif

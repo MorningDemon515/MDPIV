@@ -34,6 +34,7 @@ Materials_Texture materials =
     32.0f
 };
 
+/*
 Light_Point light = {
     VECTOR3(1.2f, 1.0f, 2.0f),
     //VECTOR3(-0.2f, -1.0f, -0.3f),
@@ -43,6 +44,21 @@ Light_Point light = {
     VECTOR3(1.0f, 1.0f, 1.0f),
 
     1.0f, 0.09f, 0.032f
+};
+*/
+
+Light_Spot light = {
+    VECTOR3(0.0f, 0.0f, 0.0f),
+    VECTOR3(0.0f, 0.0f, 0.0f),
+
+    0.0f, 
+    0.0f,
+
+    VECTOR3(0.0f, 0.0f, 0.0f),
+    VECTOR3(0.0f, 0.0f, 0.0f),
+    VECTOR3(0.0f, 0.0f, 0.0f),
+
+    0.0f, 0.0f, 0.0f
 };
 
 float vertices[] = {
@@ -178,13 +194,24 @@ int main()
     MATRIX model = IdentityMatrix();
     MATRIX NM = NormalMatrix(model);
 
-    MATRIX L_model = TranslationMatrix(light.Position.x, light.Position.y, light.Position.z) * 
-                    ScaleMatrix(0.2f, 0.2f, 0.2f);
+    //MATRIX L_model = TranslationMatrix(light.Position.x, light.Position.y, light.Position.z) * 
+    //                ScaleMatrix(0.2f, 0.2f, 0.2f);
     
     static double lastTime = glfwGetTime();
 
     system("color a");
     Camera camera = Camera();
+
+    light.cutOff = Cos(AngularToRadian(12.5f));
+    light.outerCutOff = Cos(AngularToRadian(17.5f));
+
+    light.Ambient = VECTOR3(0.1f, 0.1f, 0.1f);
+    light.Diffuse = VECTOR3(0.5f, 0.5f, 0.5f);
+    light.Specular = VECTOR3(1.0f, 1.0f, 1.0f);
+    light.Constant = 1.0f;
+    light.Linear = 0.09f;
+    light.Quadratic = 0.032f;
+
     while(window.Run())
     {
         double currentTime = glfwGetTime();
@@ -196,9 +223,12 @@ int main()
         if(Input_IsKeyReleased(GLFW_KEY_ESCAPE))
             window.run = false;        
 
-        camera.Move(speed * deltaTime, 50.0f * deltaTime);                        
+        camera.Move(speed * deltaTime, 50.0f * deltaTime);        
 
-        renderer->Clear(30, 30, 30);
+        light.Position = camera.Pos();
+        light.Direction = camera.Front();                
+
+        renderer->Clear(0, 0, 0);
         shader.Use();
         shader.SetMatrix("view", camera.Matrix());
         shader.SetMatrix("projection", projection);
@@ -212,12 +242,15 @@ int main()
         shader.SetFloat("materials.Power", materials.Power);
 
         shader.SetVec3("light.Position", light.Position);
+        shader.SetVec3("light.Direction", light.Direction);
         shader.SetVec3("light.Ambient", light.Ambient);
         shader.SetVec3("light.Diffuse", light.Diffuse);
         shader.SetVec3("light.Specular", light.Specular);
         shader.SetFloat("light.Constant", light.Constant);
         shader.SetFloat("light.Linear", light.Linear);
         shader.SetFloat("light.Quadratic", light.Quadratic);
+        shader.SetFloat("light.cutOff", light.cutOff);
+        shader.SetFloat("light.outerCutOff", light.outerCutOff);
 
         shader.SetInt("Texture", 0);
         glActiveTexture(GL_TEXTURE0);
@@ -233,6 +266,7 @@ int main()
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
+/*
         L_shader.Use();
         L_shader.SetMatrix("model", L_model);
         L_shader.SetMatrix("view", camera.Matrix());
@@ -240,7 +274,7 @@ int main()
         
         glBindVertexArray(LightVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
-
+*/
         renderer->Present(window.window);
         
         window.Quit();
