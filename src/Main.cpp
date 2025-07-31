@@ -9,25 +9,68 @@
 #include "LoadImage.h"
 
 #include <iostream>
+#include "stb_image.h"
+
+#include "Model.h"
 
 using namespace MD_Math;
 
 std::string title = "MDPIV";
 
-unsigned int VBO, VAO, EBO; 
+Mesh CreateCubeMesh() {
+     std::vector<Vertex> vertices;
+    std::vector<unsigned int> indices;
+    
+    std::vector<Vertex> cubeVertices = {
 
-float vertices[] = {
-    0.5f, 0.5f, 0.0f,   
-    0.5f, -0.5f, 0.0f,
-    -0.5f, -0.5f, 0.0f,
-    -0.5f, 0.5f, 0.0f  
-};
-
-unsigned int indices[] = {
-
-    0, 1, 3, 
-    1, 2, 3  
-};
+        { VECTOR3(-0.5f, -0.5f,  0.5f), VECTOR3(0.0f, 0.0f, 1.0f), VECTOR2(0.0f, 0.0f) },
+        { VECTOR3( 0.5f, -0.5f,  0.5f), VECTOR3(0.0f, 0.0f, 1.0f), VECTOR2(1.0f, 0.0f) },
+        { VECTOR3( 0.5f,  0.5f,  0.5f), VECTOR3(0.0f, 0.0f, 1.0f), VECTOR2(1.0f, 1.0f) },
+        { VECTOR3(-0.5f,  0.5f,  0.5f), VECTOR3(0.0f, 0.0f, 1.0f), VECTOR2(0.0f, 1.0f) },
+        
+        { VECTOR3(-0.5f, -0.5f, -0.5f), VECTOR3(0.0f, 0.0f, -1.0f), VECTOR2(1.0f, 0.0f) },
+        { VECTOR3( 0.5f, -0.5f, -0.5f), VECTOR3(0.0f, 0.0f, -1.0f), VECTOR2(0.0f, 0.0f) },
+        { VECTOR3( 0.5f,  0.5f, -0.5f), VECTOR3(0.0f, 0.0f, -1.0f), VECTOR2(0.0f, 1.0f) },
+        { VECTOR3(-0.5f,  0.5f, -0.5f), VECTOR3(0.0f, 0.0f, -1.0f), VECTOR2(1.0f, 1.0f) },
+        
+        { VECTOR3(-0.5f, -0.5f, -0.5f), VECTOR3(-1.0f, 0.0f, 0.0f), VECTOR2(0.0f, 0.0f) },
+        { VECTOR3(-0.5f, -0.5f,  0.5f), VECTOR3(-1.0f, 0.0f, 0.0f), VECTOR2(1.0f, 0.0f) },
+        { VECTOR3(-0.5f,  0.5f,  0.5f), VECTOR3(-1.0f, 0.0f, 0.0f), VECTOR2(1.0f, 1.0f) },
+        { VECTOR3(-0.5f,  0.5f, -0.5f), VECTOR3(-1.0f, 0.0f, 0.0f), VECTOR2(0.0f, 1.0f) },
+        
+        { VECTOR3(0.5f, -0.5f,  0.5f), VECTOR3(1.0f, 0.0f, 0.0f), VECTOR2(0.0f, 0.0f) },
+        { VECTOR3(0.5f, -0.5f, -0.5f), VECTOR3(1.0f, 0.0f, 0.0f), VECTOR2(1.0f, 0.0f) },
+        { VECTOR3(0.5f,  0.5f, -0.5f), VECTOR3(1.0f, 0.0f, 0.0f), VECTOR2(1.0f, 1.0f) },
+        { VECTOR3(0.5f,  0.5f,  0.5f), VECTOR3(1.0f, 0.0f, 0.0f), VECTOR2(0.0f, 1.0f) },
+        
+        { VECTOR3(-0.5f, 0.5f,  0.5f), VECTOR3(0.0f, 1.0f, 0.0f), VECTOR2(0.0f, 0.0f) },
+        { VECTOR3( 0.5f, 0.5f,  0.5f), VECTOR3(0.0f, 1.0f, 0.0f), VECTOR2(1.0f, 0.0f) },
+        { VECTOR3( 0.5f, 0.5f, -0.5f), VECTOR3(0.0f, 1.0f, 0.0f), VECTOR2(1.0f, 1.0f) },
+        { VECTOR3(-0.5f, 0.5f, -0.5f), VECTOR3(0.0f, 1.0f, 0.0f), VECTOR2(0.0f, 1.0f) },
+        
+        { VECTOR3(-0.5f, -0.5f, -0.5f), VECTOR3(0.0f, -1.0f, 0.0f), VECTOR2(0.0f, 0.0f) },
+        { VECTOR3( 0.5f, -0.5f, -0.5f), VECTOR3(0.0f, -1.0f, 0.0f), VECTOR2(1.0f, 0.0f) },
+        { VECTOR3( 0.5f, -0.5f,  0.5f), VECTOR3(0.0f, -1.0f, 0.0f), VECTOR2(1.0f, 1.0f) },
+        { VECTOR3(-0.5f, -0.5f,  0.5f), VECTOR3(0.0f, -1.0f, 0.0f), VECTOR2(0.0f, 1.0f) }
+    };
+    
+    std::vector<unsigned int> cubeIndices = {
+        // 前面
+        0, 1, 2,  2, 3, 0,
+        // 后面
+        4, 5, 6,  6, 7, 4,
+        // 左面
+        8, 9, 10, 10, 11, 8,
+        // 右面
+        12, 13, 14, 14, 15, 12,
+        // 顶面
+        16, 17, 18, 18, 19, 16,
+        // 底面
+        20, 21, 22, 22, 23, 20
+    };
+    
+    return Mesh(cubeVertices, cubeIndices, {});
+}
 
 int main()
 {
@@ -39,25 +82,9 @@ int main()
     renderer->Init(window.window);
 
     Input_Init(window.window);
-
+    
+    stbi_set_flip_vertically_on_load(true);
     glEnable(GL_DEPTH_TEST);
-
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    Shader shader = Shader("resources/glsl/vertex.txt", "resources/glsl/fragment.txt");
-    shader.Link();
 
     MATRIX model = IdentityMatrix();
     MATRIX view = ViewMatrixRH(
@@ -71,6 +98,39 @@ int main()
         0.1f,
         100.0f
     );
+    MATRIX NM = NormalMatrix(model);
+    
+    Shader shader = Shader("resources/glsl/vertex.txt", "resources/glsl/fragment.txt");
+    shader.Link();
+    //Model scp173 = Model("resources/model/scp-173.obj");
+    
+    Mesh cubeMesh = CreateCubeMesh();
+    
+    Image image;
+    Load_Image_GL("resources/image.jpg", &image);
+
+    if (image.id == 0) {
+        unsigned char defaultTexture[] = {
+            255, 0, 255,  0, 255, 0,
+            0, 255, 0,  255, 0, 255
+        };
+        
+        glGenTextures(1, &image.id);
+        glBindTexture(GL_TEXTURE_2D, image.id);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2, 2, 0, GL_RGB, GL_UNSIGNED_BYTE, defaultTexture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        std::cout << "使用默认纹理" << std::endl;
+    }
+    
+    Texture texture;
+    texture.id = image.id;
+    texture.type = "texture_diffuse";
+    texture.path = "resources/image.jpg";
+    
+    cubeMesh.textures.push_back(texture);
+
+    Camera camera = Camera();
 
     static double lastTime = glfwGetTime();
     system("color a");
@@ -84,25 +144,28 @@ int main()
 
         if(Input_IsKeyReleased(GLFW_KEY_ESCAPE))
             window.run = false;        
-   
+
+        camera.Move(2.0f * deltaTime, 50.0f * deltaTime);
 
         renderer->Clear(30, 30, 30);
+
         shader.Use();
         shader.SetMatrix("model", model);
-        shader.SetMatrix("view", view);
+        shader.SetMatrix("view", camera.Matrix());
         shader.SetMatrix("projection", projection);
-        glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
+        shader.SetMatrix("nm", NM);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, image.id);
+        shader.SetInt("texture_diffuse0", 0);
+        //scp173.Draw(shader);
+        cubeMesh.Draw(shader);
 
         renderer->Present(window.window);
         
         window.Quit();
     }
     
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
     delete renderer;
     return 0;
 }

@@ -7,6 +7,8 @@ extern "C" {
 
 typedef struct Image
 {
+    unsigned int id;// for OpenGL
+
     int width;
     int height;
     unsigned char* pixels;
@@ -14,6 +16,8 @@ typedef struct Image
 
 void Load_Image_RGB(const char* filename, Image* image);
 void Load_Image_RGBA(const char* filename, Image* image);
+
+void Load_Image_GL(const char* filename, Image* image);
 
 #ifdef __cplusplus
 }
