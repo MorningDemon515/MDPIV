@@ -17,61 +17,6 @@ using namespace MD_Math;
 
 std::string title = "MDPIV";
 
-Mesh CreateCubeMesh() {
-     std::vector<Vertex> vertices;
-    std::vector<unsigned int> indices;
-    
-    std::vector<Vertex> cubeVertices = {
-
-        { VECTOR3(-0.5f, -0.5f,  0.5f), VECTOR3(0.0f, 0.0f, 1.0f), VECTOR2(0.0f, 0.0f) },
-        { VECTOR3( 0.5f, -0.5f,  0.5f), VECTOR3(0.0f, 0.0f, 1.0f), VECTOR2(1.0f, 0.0f) },
-        { VECTOR3( 0.5f,  0.5f,  0.5f), VECTOR3(0.0f, 0.0f, 1.0f), VECTOR2(1.0f, 1.0f) },
-        { VECTOR3(-0.5f,  0.5f,  0.5f), VECTOR3(0.0f, 0.0f, 1.0f), VECTOR2(0.0f, 1.0f) },
-        
-        { VECTOR3(-0.5f, -0.5f, -0.5f), VECTOR3(0.0f, 0.0f, -1.0f), VECTOR2(1.0f, 0.0f) },
-        { VECTOR3( 0.5f, -0.5f, -0.5f), VECTOR3(0.0f, 0.0f, -1.0f), VECTOR2(0.0f, 0.0f) },
-        { VECTOR3( 0.5f,  0.5f, -0.5f), VECTOR3(0.0f, 0.0f, -1.0f), VECTOR2(0.0f, 1.0f) },
-        { VECTOR3(-0.5f,  0.5f, -0.5f), VECTOR3(0.0f, 0.0f, -1.0f), VECTOR2(1.0f, 1.0f) },
-        
-        { VECTOR3(-0.5f, -0.5f, -0.5f), VECTOR3(-1.0f, 0.0f, 0.0f), VECTOR2(0.0f, 0.0f) },
-        { VECTOR3(-0.5f, -0.5f,  0.5f), VECTOR3(-1.0f, 0.0f, 0.0f), VECTOR2(1.0f, 0.0f) },
-        { VECTOR3(-0.5f,  0.5f,  0.5f), VECTOR3(-1.0f, 0.0f, 0.0f), VECTOR2(1.0f, 1.0f) },
-        { VECTOR3(-0.5f,  0.5f, -0.5f), VECTOR3(-1.0f, 0.0f, 0.0f), VECTOR2(0.0f, 1.0f) },
-        
-        { VECTOR3(0.5f, -0.5f,  0.5f), VECTOR3(1.0f, 0.0f, 0.0f), VECTOR2(0.0f, 0.0f) },
-        { VECTOR3(0.5f, -0.5f, -0.5f), VECTOR3(1.0f, 0.0f, 0.0f), VECTOR2(1.0f, 0.0f) },
-        { VECTOR3(0.5f,  0.5f, -0.5f), VECTOR3(1.0f, 0.0f, 0.0f), VECTOR2(1.0f, 1.0f) },
-        { VECTOR3(0.5f,  0.5f,  0.5f), VECTOR3(1.0f, 0.0f, 0.0f), VECTOR2(0.0f, 1.0f) },
-        
-        { VECTOR3(-0.5f, 0.5f,  0.5f), VECTOR3(0.0f, 1.0f, 0.0f), VECTOR2(0.0f, 0.0f) },
-        { VECTOR3( 0.5f, 0.5f,  0.5f), VECTOR3(0.0f, 1.0f, 0.0f), VECTOR2(1.0f, 0.0f) },
-        { VECTOR3( 0.5f, 0.5f, -0.5f), VECTOR3(0.0f, 1.0f, 0.0f), VECTOR2(1.0f, 1.0f) },
-        { VECTOR3(-0.5f, 0.5f, -0.5f), VECTOR3(0.0f, 1.0f, 0.0f), VECTOR2(0.0f, 1.0f) },
-        
-        { VECTOR3(-0.5f, -0.5f, -0.5f), VECTOR3(0.0f, -1.0f, 0.0f), VECTOR2(0.0f, 0.0f) },
-        { VECTOR3( 0.5f, -0.5f, -0.5f), VECTOR3(0.0f, -1.0f, 0.0f), VECTOR2(1.0f, 0.0f) },
-        { VECTOR3( 0.5f, -0.5f,  0.5f), VECTOR3(0.0f, -1.0f, 0.0f), VECTOR2(1.0f, 1.0f) },
-        { VECTOR3(-0.5f, -0.5f,  0.5f), VECTOR3(0.0f, -1.0f, 0.0f), VECTOR2(0.0f, 1.0f) }
-    };
-    
-    std::vector<unsigned int> cubeIndices = {
-        // 前面
-        0, 1, 2,  2, 3, 0,
-        // 后面
-        4, 5, 6,  6, 7, 4,
-        // 左面
-        8, 9, 10, 10, 11, 8,
-        // 右面
-        12, 13, 14, 14, 15, 12,
-        // 顶面
-        16, 17, 18, 18, 19, 16,
-        // 底面
-        20, 21, 22, 22, 23, 20
-    };
-    
-    return Mesh(cubeVertices, cubeIndices, {});
-}
-
 int main()
 {
     Window window = Window(800, 600);
@@ -83,10 +28,10 @@ int main()
 
     Input_Init(window.window);
     
-    stbi_set_flip_vertically_on_load(true);
+    //stbi_set_flip_vertically_on_load(true);
     glEnable(GL_DEPTH_TEST);
 
-    MATRIX model = IdentityMatrix();
+    MATRIX model = IdentityMatrix() * ScaleMatrix(0.1f, 0.1f, 0.1f);
     MATRIX view = ViewMatrixRH(
         VECTOR3(0.0f, 0.0f, 3.0f),
         VECTOR3(0.0f, 0.0f, 0.0f),
@@ -102,33 +47,8 @@ int main()
     
     Shader shader = Shader("resources/glsl/vertex.txt", "resources/glsl/fragment.txt");
     shader.Link();
-    //Model scp173 = Model("resources/model/scp-173.obj");
-    
-    Mesh cubeMesh = CreateCubeMesh();
-    
-    Image image;
-    Load_Image_GL("resources/image.jpg", &image);
-
-    if (image.id == 0) {
-        unsigned char defaultTexture[] = {
-            255, 0, 255,  0, 255, 0,
-            0, 255, 0,  255, 0, 255
-        };
-        
-        glGenTextures(1, &image.id);
-        glBindTexture(GL_TEXTURE_2D, image.id);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2, 2, 0, GL_RGB, GL_UNSIGNED_BYTE, defaultTexture);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        std::cout << "使用默认纹理" << std::endl;
-    }
-    
-    Texture texture;
-    texture.id = image.id;
-    texture.type = "texture_diffuse";
-    texture.path = "resources/image.jpg";
-    
-    cubeMesh.textures.push_back(texture);
+     
+    Model scp173 = Model("resources/model/scp-173.obj");
 
     Camera camera = Camera();
 
@@ -155,11 +75,7 @@ int main()
         shader.SetMatrix("projection", projection);
         shader.SetMatrix("nm", NM);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, image.id);
-        shader.SetInt("texture_diffuse0", 0);
-        //scp173.Draw(shader);
-        cubeMesh.Draw(shader);
+        scp173.Draw(shader);
 
         renderer->Present(window.window);
         
