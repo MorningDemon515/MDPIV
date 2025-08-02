@@ -10,6 +10,7 @@ add_executable(MDPIV
         src/LoadImage.c
         src/Window.cpp
         src/Shader.cpp
+        src/Texture.c
         src/OGL/Renderer_GL.cpp
         src/D3D9/Renderer_D3D9.cpp
         src/Main.cpp)

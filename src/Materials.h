@@ -14,8 +14,6 @@ typedef struct Materials
 
 typedef struct Materials_Texture
 {
-    MD_Math::VECTOR3 Specular;
-
     float Power;
 } Materials_Texture;
 

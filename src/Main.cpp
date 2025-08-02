@@ -7,6 +7,7 @@
 #include "Materials.h"
 #include "Light.h"
 #include "LoadImage.h"
+#include "Texture.h"
 
 #include <iostream>
 
@@ -14,14 +15,12 @@ using namespace MD_Math;
 
 std::string title = "MDPIV";
 
-unsigned int VBO, VAO, LightVAO, texture;
+unsigned int VBO, VAO, LightVAO, t1, t2;
 Shader shader = Shader("resources/glsl/vertex.txt", "resources/glsl/fragment.txt");
 Shader L_shader = Shader("resources/glsl/light_vertex.txt", "resources/glsl/light_fragment.txt");
 
 Materials_Texture materials =
 {
-    VECTOR3(0.5f, 0.5f, 0.5f),
-
     32.0f
 };
 
@@ -128,28 +127,8 @@ int main()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glGenTextures(1,&texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);   
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    Image tex;
-    Load_Image_RGB("resources/image.jpg", &tex);
-
-    glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GL_RGB,
-        tex.width, tex.height,
-        0, GL_RGB,
-        GL_UNSIGNED_BYTE,
-        tex.pixels
-    );
-
-    glGenerateMipmap(GL_TEXTURE_2D);
+    t1 = TextureFromFile("resources/image.jpg");
+    t2 = TextureFromFile("resources/image2.png");
 
     shader.Link();
     L_shader.Link();
@@ -267,7 +246,6 @@ int main()
 
         //shader.SetVec3("materials.Ambinet", materials.Ambinet);
         //shader.SetVec3("materials.Diffuse", materials.Diffuse);
-        shader.SetVec3("materials.Specular", materials.Specular);
         shader.SetFloat("materials.Power", materials.Power);
 
         shader.SetVec3("light_dir.Direction", light_dir.Direction);
@@ -318,9 +296,12 @@ int main()
         shader.SetFloat("light_spot.Linear", light_spot.Linear);
         shader.SetFloat("light_spot.Quadratic", light_spot.Quadratic);
 
-        shader.SetInt("Texture", 0);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture);
+        shader.SetInt("texture_diffuse", 0);
+        SetTexture(t1, GL_TEXTURE0);
+
+        shader.SetInt("texture_specular", 1);
+        SetTexture(t2, GL_TEXTURE1);
+
         glBindVertexArray(VAO);
 
         for (unsigned int i = 0; i < 10; i++)
@@ -351,7 +332,8 @@ int main()
         window.Quit();
     }
     
-    glDeleteTextures(1, &texture);
+    FreeTexture(t1);
+    FreeTexture(t2);
     glDeleteBuffers(1, &VBO);
     glDeleteVertexArrays(1, &VAO);
     glDeleteVertexArrays(1, &LightVAO);
