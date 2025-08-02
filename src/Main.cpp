@@ -31,7 +31,7 @@ int main()
     //stbi_set_flip_vertically_on_load(true);
     glEnable(GL_DEPTH_TEST);
 
-    MATRIX model = IdentityMatrix() * ScaleMatrix(0.1f, 0.1f, 0.1f);
+    MATRIX model = IdentityMatrix() * ScaleMatrix(0.01f, 0.01f, 0.01f);
     MATRIX view = ViewMatrixRH(
         VECTOR3(0.0f, 0.0f, 3.0f),
         VECTOR3(0.0f, 0.0f, 0.0f),
@@ -48,7 +48,7 @@ int main()
     Shader shader = Shader("resources/glsl/vertex.txt", "resources/glsl/fragment.txt");
     shader.Link();
      
-    Model scp173 = Model("resources/model/scp-173.obj");
+    Model scp173 = Model("resources/model/173_2.b3d");
 
     Camera camera = Camera();
 
@@ -70,11 +70,11 @@ int main()
         renderer->Clear(30, 30, 30);
 
         shader.Use();
+
         shader.SetMatrix("model", model);
         shader.SetMatrix("view", camera.Matrix());
         shader.SetMatrix("projection", projection);
         shader.SetMatrix("nm", NM);
-
         scp173.Draw(shader);
 
         renderer->Present(window.window);

@@ -9,8 +9,6 @@
 
 #include <glad/glad.h>
 
-//#define MAX_BONE_INFLUENCE 4
-
 struct Vertex {
     MD_Math::VECTOR3 Position;
     MD_Math::VECTOR3 Normal;

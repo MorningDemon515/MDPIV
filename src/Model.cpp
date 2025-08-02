@@ -46,6 +46,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
     MD_Math::VECTOR2 vec(0.0f, 0.0f);
     for(unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
+        
         vector.x = mesh->mVertices[i].x;
         vector.y = mesh->mVertices[i].y;
         vector.z = mesh->mVertices[i].z;
@@ -91,7 +92,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
     // 2. specular maps
     std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
     textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-        
+
     return Mesh(vertices, indices, textures);
 }
 
@@ -138,3 +139,24 @@ unsigned int Model::TextureFromFile(const char *path, const std::string &directo
 
     return tex.id;
 }
+
+MD_Math::MATRIX ConvertMatrix(const aiMatrix4x4& from)
+	{
+		MD_Math::MATRIX to;
+		//the a,b,c,d in assimp is the row ; the 1,2,3,4 is the column
+		to._11 = from.a1; to._21 = from.a2; to._31 = from.a3; to._41 = from.a4;
+		to._12 = from.b1; to._22 = from.b2; to._32 = from.b3; to._42 = from.b4;
+		to._13 = from.c1; to._23 = from.c2; to._33 = from.c3; to._43 = from.c4;
+		to._14 = from.d1; to._24 = from.d2; to._34 = from.d3; to._44 = from.d4;
+		return to;
+	}
+
+	MD_Math::VECTOR3 GetVec(const aiVector3D& vec) 
+	{ 
+		return MD_Math::VECTOR3(vec.x, vec.y, vec.z); 
+	}
+
+	MD_Math::QUATERNION GetQuat(const aiQuaternion& pOrientation)
+	{
+		return MD_Math::QUATERNION(pOrientation.w, pOrientation.x, pOrientation.y, pOrientation.z);
+	}

@@ -80,6 +80,7 @@ namespace MD_Math{
     float ArcSin(float x);
     float ArcCos(float x);
     float ArcTan(float x);
+    float ArcTan2(float y, float x);
     float Sec(float x);
     float Csc(float x);
     bool Equal(float a,float b, float epsilon);
@@ -220,6 +221,63 @@ namespace MD_Math{
     } MATRIX3x3;
 
     MATRIX IdentityMatrix();
+
+    typedef struct QUATERNION
+    {
+        QUATERNION(float _x = 0.0f, float _y = 0.0f, float _z = 0.0f, float _w = 1.0f);
+        float x, y, z, w;
+
+        QUATERNION operator + (const QUATERNION& q) const;
+        void operator += (const QUATERNION& q);
+        
+        QUATERNION operator - (const QUATERNION& q) const;
+        void operator -= (const QUATERNION& q);
+        
+        QUATERNION operator * (const QUATERNION& q) const;
+        void operator *= (const QUATERNION& q);
+        
+        QUATERNION operator * (float scalar) const;
+        void operator *= (float scalar);
+        
+        QUATERNION operator / (float scalar) const;
+        void operator /= (float scalar);
+        
+        bool operator == (const QUATERNION& q) const;
+        bool operator != (const QUATERNION& q) const;
+        
+        QUATERNION operator - () const;
+
+    } QUATERNION;
+
+    float QuaternionLength(const QUATERNION& q);
+    QUATERNION QuaternionNormalize(const QUATERNION& q);
+    QUATERNION QuaternionConjugate(const QUATERNION& q);
+    QUATERNION QuaternionInverse(const QUATERNION& q);
+    float QuaternionDot(const QUATERNION& q1, const QUATERNION& q2);
+
+    QUATERNION QuaternionFromAxisAngle(VECTOR3 axis, float angle);
+    QUATERNION QuaternionFromEulerAngles(float pitch, float yaw, float roll);
+    QUATERNION QuaternionFromMatrix(const MATRIX& m);
+
+    MATRIX MatrixFromQuaternion(const QUATERNION& q);
+    VECTOR3 EulerAnglesFromQuaternion(const QUATERNION& q);
+
+    VECTOR3 RotateVector(const QUATERNION& q, const VECTOR3& v);
+    QUATERNION QuaternionSlerp(const QUATERNION& q1, const QUATERNION& q2, float t);
+    QUATERNION QuaternionLerp(const QUATERNION& q1, const QUATERNION& q2, float t);
+
+    template<typename T>
+    T Mix(const T& x, const T& y, float a) {
+        return x * (1.0f - a) + y * a;
+    }
+    
+    float Mix(float x, float y, float a);
+    
+    VECTOR2 Mix(const VECTOR2& x, const VECTOR2& y, float a);
+    VECTOR3 Mix(const VECTOR3& x, const VECTOR3& y, float a);
+    VECTOR4 Mix(const VECTOR4& x, const VECTOR4& y, float a);
+    
+    QUATERNION Mix(const QUATERNION& q1, const QUATERNION& q2, float a);
 
 
 // About Vector--------------------------------------------------------------------------------
