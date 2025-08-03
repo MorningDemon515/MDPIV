@@ -1,4 +1,3 @@
-
 #include "Window.h"
 #include "OGL/Renderer_GL.h"
 #include "Shader.h"
@@ -10,12 +9,13 @@
 #include "Texture.h"
 
 #include <iostream>
+#include <vector>
 
 using namespace MD_Math;
 
 std::string title = "MDPIV";
 
-unsigned int VBO, VAO, LightVAO, t1, t2;
+unsigned int VBO, VAO, EBO ,LightVAO, t1, t2, n;
 Shader shader = Shader("resources/glsl/vertex.txt", "resources/glsl/fragment.txt");
 Shader L_shader = Shader("resources/glsl/light_vertex.txt", "resources/glsl/light_fragment.txt");
 
@@ -24,50 +24,55 @@ Materials_Texture materials =
     32.0f
 };
 
-float vertices[] = {
-     // positions          // normals           // texture coords
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
+struct Vertex
+{
+    VECTOR3 Position;
+    VECTOR3 Normals;
+    VECTOR2 TexCoords;
+    VECTOR3 Tangent;   
+    VECTOR3 Bitangent; 
 };
+
+VECTOR3 pos[24] = {
+
+    {-1.0f, -1.0f, -1.0f}, { 1.0f, -1.0f, -1.0f}, { 1.0f,  1.0f, -1.0f}, {-1.0f,  1.0f, -1.0f},
+   
+    {-1.0f, -1.0f,  1.0f}, {-1.0f,  1.0f,  1.0f}, { 1.0f,  1.0f,  1.0f}, { 1.0f, -1.0f,  1.0f},
+   
+    {-1.0f, -1.0f, -1.0f}, {-1.0f,  1.0f, -1.0f}, {-1.0f,  1.0f,  1.0f}, {-1.0f, -1.0f,  1.0f},
+    
+    { 1.0f, -1.0f, -1.0f}, { 1.0f, -1.0f,  1.0f}, { 1.0f,  1.0f,  1.0f}, { 1.0f,  1.0f, -1.0f},
+  
+    {-1.0f, -1.0f, -1.0f}, {-1.0f, -1.0f,  1.0f}, { 1.0f, -1.0f,  1.0f}, { 1.0f, -1.0f, -1.0f},
+   
+    {-1.0f,  1.0f, -1.0f}, { 1.0f,  1.0f, -1.0f}, { 1.0f,  1.0f,  1.0f}, {-1.0f,  1.0f,  1.0f}
+};
+
+VECTOR2 texc[24] = {
+   
+    {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f},
+  
+    {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}, {0.0f, 0.0f},
+ 
+    {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}, {0.0f, 0.0f},
+  
+    {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f},
+    
+    {0.0f, 1.0f}, {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+ 
+    {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}
+};
+
+std::vector<unsigned int> indices = {
+  0,1,2,  0,2,3,    
+    4,5,6,  4,6,7,    
+    8,9,10, 8,10,11,  
+    12,13,14,12,14,15,
+    16,17,18,16,18,19,
+    20,21,22,20,22,23 
+};
+
+std::vector<Vertex> vertices;
 
 VECTOR3 cube_Positions[] = {
     VECTOR3( 0.0f,  0.0f,  0.0f),
@@ -89,8 +94,74 @@ VECTOR3 pointLightPositions[] = {
     VECTOR3( 0.0f,  0.0f, -3.0f)
 };
 
+void ComputeTangents(std::vector<Vertex>& vertices, 
+                      const std::vector<unsigned int>& indices) {
+    for (size_t i = 0; i < indices.size(); i += 3) {
+        Vertex& v0 = vertices[indices[i]];
+        Vertex& v1 = vertices[indices[i+1]];
+        Vertex& v2 = vertices[indices[i+2]];
+        
+        VECTOR3 edge1 = v1.Position - v0.Position;
+        VECTOR3 edge2 = v2.Position - v0.Position;
+        
+        VECTOR2 deltaUV1 = v1.TexCoords - v0.TexCoords;
+        VECTOR2 deltaUV2 = v2.TexCoords - v0.TexCoords;
+        
+        float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+        
+        VECTOR3 tangent(0.0f, 0.0f, 0.0f);
+        VECTOR3 bitangent(0.0f, 0.0f, 0.0f);
+        
+        tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+        tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+        tangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+        
+        bitangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+        bitangent.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+        bitangent.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+        
+        v0.Tangent += tangent;
+        v1.Tangent += tangent;
+        v2.Tangent += tangent;
+        
+        v0.Bitangent += bitangent;
+        v1.Bitangent += bitangent;
+        v2.Bitangent += bitangent;
+    }
+    
+    for (auto& vertex : vertices) {
+        vertex.Tangent = Vector3Normalized(vertex.Tangent);
+        vertex.Bitangent = Vector3Normalized(vertex.Bitangent);
+    }
+}
+
 int main()
 {
+    Vertex temp = {VECTOR3(0.0f, 0.0f, 0.0f), VECTOR3(0.0f, 0.0f, 0.0f), VECTOR2(0.0f, 0.0f), VECTOR3(0.0f, 0.0f, 0.0f), VECTOR3(0.0f, 0.0f, 0.0f)};
+    VECTOR3 normal(0.0f, 0.0f, 0.0f);
+    
+    int j = 0, c = 0;
+    for(int i = 0; i < 24; i++)
+    {
+        if(i % 4 == 0 && i != 0)
+        {
+            j += 1; 
+            c += 4;
+        }
+            
+        temp.Position = pos[i];
+        normal = -Vector3Normalized(
+            VectorCross(
+                pos[c + 1] - pos[c],
+                pos[c + 2] - pos[c]));
+
+        temp.Normals = normal;
+        temp.TexCoords = texc[i];
+        vertices.push_back(temp);
+    }
+
+    ComputeTangents(vertices, indices);
+
     Window window = Window(800, 600);
     window.SetTitle(title.c_str());
     window.SetICON("resources/icon/MorningDemon.jpg");
@@ -107,28 +178,39 @@ int main()
 
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
 
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normals));
     glEnableVertexAttribArray(1);
 
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
     glEnableVertexAttribArray(2);
+
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tangent));
+
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitangent));
 
     glGenVertexArrays(1, &LightVAO);
     glBindVertexArray(LightVAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
     glEnableVertexAttribArray(0);
 
-    t1 = TextureFromFile("resources/image.jpg");
-    t2 = TextureFromFile("resources/image2.png");
+    t1 = TextureFromFileRGB("resources/image.jpg");
+    t2 = TextureFromFileRGBA("resources/image2.png");
+    n = TextureFromFileRGB("resources/image_n.png");
 
     shader.Link();
     L_shader.Link();
@@ -296,22 +378,25 @@ int main()
         shader.SetFloat("light_spot.Linear", light_spot.Linear);
         shader.SetFloat("light_spot.Quadratic", light_spot.Quadratic);
 
-        shader.SetInt("texture_diffuse", 0);
-        SetTexture(t1, GL_TEXTURE0);
+        shader.SetInt("texture_diffuse", 1);
+        SetTexture(t1, GL_TEXTURE1);
 
-        shader.SetInt("texture_specular", 1);
-        SetTexture(t2, GL_TEXTURE1);
+        shader.SetInt("texture_specular", 0);
+        SetTexture(t2, GL_TEXTURE0);
+
+        shader.SetInt("texture_normal", 2);
+        SetTexture(n, GL_TEXTURE2);
 
         glBindVertexArray(VAO);
-
         for (unsigned int i = 0; i < 10; i++)
         {
          
-            model = TranslationMatrix(cube_Positions[i].x , cube_Positions[i].y, cube_Positions[i].z);
+            model = TranslationMatrix(cube_Positions[i].x , cube_Positions[i].y, cube_Positions[i].z) * ScaleMatrix(0.5f, 0.5f, 0.5f);
             shader.SetMatrix("model", model);
 
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
         }
+        glBindVertexArray(0);
 
         L_shader.Use();
         L_shader.SetMatrix("view", camera.Matrix());
@@ -321,11 +406,12 @@ int main()
         for(unsigned int j = 0; j < 4; j++)
         {
             L_model = TranslationMatrix(pointLightPositions[j].x, pointLightPositions[j].y, pointLightPositions[j].z) * 
-                     ScaleMatrix(0.2f, 0.2f, 0.2f);
+                     ScaleMatrix(0.2f, 0.2f, 0.2f) * ScaleMatrix(0.5f, 0.5f, 0.5f);
 
             L_shader.SetMatrix("model", L_model);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
         }
+        glBindVertexArray(0);
         
         renderer->Present(window.window);
         
@@ -334,6 +420,8 @@ int main()
     
     FreeTexture(t1);
     FreeTexture(t2);
+    FreeTexture(n);
+    glDeleteBuffers(1, &EBO);
     glDeleteBuffers(1, &VBO);
     glDeleteVertexArrays(1, &VAO);
     glDeleteVertexArrays(1, &LightVAO);
