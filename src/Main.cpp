@@ -18,7 +18,7 @@ using namespace MD_Math;
 std::string title = "MDPIV";
 
 unsigned int VBO, VAO, EBO ,LightVAO, t1, t2, n, FBO, texture_fbo, RBO, quadVAO, quadVBO, skyboxVAO, skyboxVBO;
-Shader shader = Shader("resources/glsl/vertex.txt", "resources/glsl/fragment.txt");
+Shader shader = Shader("resources/glsl/PBR_vs.txt", "resources/glsl/PBR_fs.txt");
 Shader L_shader = Shader("resources/glsl/light_vertex.txt", "resources/glsl/light_fragment.txt");
 
 Materials_Texture materials =
@@ -91,9 +91,9 @@ VECTOR3 cube_Positions[] = {
 
 VECTOR3 pointLightPositions[] = {
     VECTOR3( 0.7f,  0.2f,  2.0f),
-    VECTOR3( 2.3f, -3.3f, -4.0f),
-    VECTOR3(-4.0f,  2.0f, -12.0f),
-    VECTOR3( 0.0f,  0.0f, -3.0f)
+    //VECTOR3( 2.3f, -3.3f, -4.0f),
+    //VECTOR3(-4.0f,  2.0f, -12.0f),
+    //VECTOR3( 0.0f,  0.0f, -3.0f)
 };
 
 void ComputeTangents(std::vector<Vertex>& vertices, 
@@ -391,14 +391,6 @@ unsigned int cubemapTexture = loadCubemap(faces);
     system("color a");
     Camera camera = Camera();
 
-    Light_Directional light_dir = {
-        VECTOR3(-0.2f, -1.0f, -0.3f),
-        
-        VECTOR3(0.05f, 0.05f, 0.05f),
-        VECTOR3(0.4f, 0.4f, 0.4f),
-        VECTOR3(0.5f, 0.5f, 0.5f)
-    };
-
     Light_Point light_point0 = {
         pointLightPositions[0],
 
@@ -409,56 +401,11 @@ unsigned int cubemapTexture = loadCubemap(faces);
         1.0f, 0.09f, 0.032f
     };
 
-    Light_Point light_point1 = {
-        pointLightPositions[1],
-
-        VECTOR3(0.05f, 0.05f, 0.05f),
-        VECTOR3(0.8f, 0.8f, 0.8f),
-        VECTOR3(1.0f, 1.0f, 1.0f),
-
-        1.0f, 0.09f, 0.032f
-    };
-
-    Light_Point light_point2 = {
-        pointLightPositions[2],
-
-        VECTOR3(0.05f, 0.05f, 0.05f),
-        VECTOR3(0.8f, 0.8f, 0.8f),
-        VECTOR3(1.0f, 1.0f, 1.0f),
-
-        1.0f, 0.09f, 0.032f
-    };
-
-    Light_Point light_point3 = {
-       pointLightPositions[3],
-
-        VECTOR3(0.05f, 0.05f, 0.05f),
-        VECTOR3(0.8f, 0.8f, 0.8f),
-        VECTOR3(1.0f, 1.0f, 1.0f),
-
-        1.0f, 0.09f, 0.032f
-    };
-
-    Light_Spot light_spot = {
-        VECTOR3(0.0f, 0.0f, 0.0f),
-        VECTOR3(0.0f, 0.0f, 0.0f),
-        0.0f, 0.0f,
-        VECTOR3(0.0f, 0.0f, 0.0f),
-        VECTOR3(0.0f, 0.0f, 0.0f),
-        VECTOR3(0.0f, 0.0f, 0.0f),
-        0.0f, 0.0f,0.0f
+    PBR_Light pbr_light = {
+        VECTOR3( 0.7f,  0.2f,  2.0f),
+        VECTOR3(80.0f, 80.0f, 80.0f)
     };
     
-    light_spot.cutOff = Cos(AngularToRadian(12.5f));
-    light_spot.outerCutOff = Cos(AngularToRadian(17.5f));
-
-    light_spot.Ambient = VECTOR3(0.05f, 0.05f, 0.05f);
-    light_spot.Diffuse = VECTOR3(0.8f, 0.8f, 0.8f);
-    light_spot.Specular = VECTOR3(1.0f, 1.0f, 1.0f);
-
-    light_spot.Constant = 1.0f;
-    light_spot.Linear = 0.09f;
-    light_spot.Quadratic = 0.032f;
 
     while(window.Run())
     {
@@ -471,10 +418,7 @@ unsigned int cubemapTexture = loadCubemap(faces);
         if(Input_IsKeyReleased(GLFW_KEY_ESCAPE))
             window.run = false;        
 
-        camera.Move(speed * deltaTime, 50.0f * deltaTime);    
-
-        light_spot.Position = camera.Pos();
-        light_spot.Direction = camera.Front();               
+        camera.Move(speed * deltaTime, 50.0f * deltaTime);                
 
         glBindFramebuffer(GL_FRAMEBUFFER, FBO);
         renderer->Clear(0, 0, 0);
@@ -485,68 +429,25 @@ unsigned int cubemapTexture = loadCubemap(faces);
         shader.SetMatrix("projection", projection);
         shader.SetMatrix("nm", NM);
 
+ 
         shader.SetVec3("ViewPos", camera.Pos());
 
-        //shader.SetVec3("materials.Ambinet", materials.Ambinet);
-        //shader.SetVec3("materials.Diffuse", materials.Diffuse);
-        shader.SetFloat("materials.Power", materials.Power);
+        //shader.SetFloat("materials.Power", materials.Power);
 
-        shader.SetVec3("light_dir.Direction", light_dir.Direction);
-        shader.SetVec3("light_dir.Ambient", light_dir.Ambient);
-        shader.SetVec3("light_dir.Diffuse", light_dir.Diffuse);
-        shader.SetVec3("light_dir.Specular", light_dir.Specular);
+        shader.SetVec3("light.Position", pbr_light.Position);
+        shader.SetVec3("light.Color", pbr_light.Color);
+        //shader.SetVec3("light.Ambient", light_point0.Ambient);
+        //shader.SetVec3("light.Diffuse", light_point0.Diffuse);
+        //shader.SetVec3("light.Specular", light_point0.Specular);
+        //shader.SetFloat("light.Constant", light_point0.Constant);
+        //shader.SetFloat("light.Linear", light_point0.Linear);
+        //shader.SetFloat("light.Quadratic", light_point0.Quadratic);
 
-        shader.SetVec3("light_point[0].Position", light_point0.Position);
-        shader.SetVec3("light_point[0].Ambient", light_point0.Ambient);
-        shader.SetVec3("light_point[0].Diffuse", light_point0.Diffuse);
-        shader.SetVec3("light_point[0].Specular", light_point0.Specular);
-        shader.SetFloat("light_point[0].Constant", light_point0.Constant);
-        shader.SetFloat("light_point[0].Linear", light_point0.Linear);
-        shader.SetFloat("light_point[0].Quadratic", light_point0.Quadratic);
+        shader.SetInt("Texture", 0);
+        SetTexture(t1, GL_TEXTURE0);
 
-        shader.SetVec3("light_point[1].Position", light_point1.Position);
-        shader.SetVec3("light_point[1].Ambient", light_point1.Ambient);
-        shader.SetVec3("light_point[1].Diffuse", light_point1.Diffuse);
-        shader.SetVec3("light_point[1].Specular", light_point1.Specular);
-        shader.SetFloat("light_point[1].Constant", light_point1.Constant);
-        shader.SetFloat("light_point[1].Linear", light_point1.Linear);
-        shader.SetFloat("light_point[1].Quadratic", light_point1.Quadratic);
-
-        shader.SetVec3("light_point[2].Position", light_point2.Position);
-        shader.SetVec3("light_point[2].Ambient", light_point2.Ambient);
-        shader.SetVec3("light_point[2].Diffuse", light_point2.Diffuse);
-        shader.SetVec3("light_point[2].Specular", light_point2.Specular);
-        shader.SetFloat("light_point[2].Constant", light_point2.Constant);
-        shader.SetFloat("light_point[2].Linear", light_point2.Linear);
-        shader.SetFloat("light_point[2].Quadratic", light_point2.Quadratic);
-
-        shader.SetVec3("light_point[3].Position", light_point3.Position);
-        shader.SetVec3("light_point[3].Ambient", light_point3.Ambient);
-        shader.SetVec3("light_point[3].Diffuse", light_point3.Diffuse);
-        shader.SetVec3("light_point[3].Specular", light_point3.Specular);
-        shader.SetFloat("light_point[3].Constant", light_point3.Constant);
-        shader.SetFloat("light_point[3].Linear", light_point3.Linear);
-        shader.SetFloat("light_point[3].Quadratic", light_point3.Quadratic);
-
-        shader.SetVec3("light_spot.Position", light_spot.Position);
-        shader.SetVec3("light_spot.Direction", light_spot.Direction);
-        shader.SetVec3("light_spot.Ambient", light_spot.Ambient);
-        shader.SetVec3("light_spot.Diffuse", light_spot.Diffuse);
-        shader.SetVec3("light_spot.Specular", light_spot.Specular);
-        shader.SetFloat("light_spot.cutOff", light_spot.cutOff);
-        shader.SetFloat("light_spot.outerCutOff", light_spot.outerCutOff);
-        shader.SetFloat("light_spot.Constant", light_spot.Constant);
-        shader.SetFloat("light_spot.Linear", light_spot.Linear);
-        shader.SetFloat("light_spot.Quadratic", light_spot.Quadratic);
-
-        shader.SetInt("texture_diffuse", 1);
-        SetTexture(t1, GL_TEXTURE1);
-
-        shader.SetInt("texture_specular", 0);
-        SetTexture(t2, GL_TEXTURE0);
-
-        shader.SetInt("texture_normal", 2);
-        SetTexture(n, GL_TEXTURE2);
+        shader.SetInt("texture_normal", 1);
+        SetTexture(n, GL_TEXTURE1);
 
         glBindVertexArray(VAO);
         for (unsigned int i = 0; i < 10; i++)
@@ -564,7 +465,8 @@ unsigned int cubemapTexture = loadCubemap(faces);
         L_shader.SetMatrix("projection", projection);
         
         glBindVertexArray(LightVAO);
-        for(unsigned int j = 0; j < 4; j++)
+                                    //4
+        for(unsigned int j = 0; j < 1; j++)
         {
             L_model = TranslationMatrix(pointLightPositions[j].x, pointLightPositions[j].y, pointLightPositions[j].z) * 
                      ScaleMatrix(0.2f, 0.2f, 0.2f) * ScaleMatrix(0.5f, 0.5f, 0.5f);

@@ -41,4 +41,10 @@ typedef struct Light_Spot
     float Quadratic;
 } Light_Spot;
 
+typedef struct PBR_Light
+{
+    MD_Math::VECTOR3 Position;
+    MD_Math::VECTOR3 Color;
+} PBR_Light;
+
 #endif
