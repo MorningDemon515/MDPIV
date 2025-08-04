@@ -251,6 +251,7 @@ int main()
     Input_Init(window.window);
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_FRAMEBUFFER_SRGB);
 
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
