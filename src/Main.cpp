@@ -11,11 +11,13 @@
 #include <iostream>
 #include <vector>
 
+#include "stb_image.h"
+
 using namespace MD_Math;
 
 std::string title = "MDPIV";
 
-unsigned int VBO, VAO, EBO ,LightVAO, t1, t2, n, FBO, texture_fbo, RBO;
+unsigned int VBO, VAO, EBO ,LightVAO, t1, t2, n, FBO, texture_fbo, RBO, quadVAO, quadVBO, skyboxVAO, skyboxVBO;
 Shader shader = Shader("resources/glsl/vertex.txt", "resources/glsl/fragment.txt");
 Shader L_shader = Shader("resources/glsl/light_vertex.txt", "resources/glsl/light_fragment.txt");
 
@@ -135,6 +137,83 @@ void ComputeTangents(std::vector<Vertex>& vertices,
     }
 }
 
+unsigned int loadCubemap(std::vector<std::string> faces)
+{
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+    int width, height, nrChannels;
+    for (unsigned int i = 0; i < faces.size(); i++)
+    {
+        unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+        if (data)
+        {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 
+                         0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+            );
+            stbi_image_free(data);
+        }
+        else
+        {
+            std::cout << "Cubemap texture failed to load at path: " << faces[i] << std::endl;
+            stbi_image_free(data);
+        }
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    return textureID;
+}
+
+ float skyboxVertices[] = {
+        // positions          
+        -1.0f,  1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+        -1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f
+    };
+
 int main()
 {
     Vertex temp = {VECTOR3(0.0f, 0.0f, 0.0f), VECTOR3(0.0f, 0.0f, 0.0f), VECTOR2(0.0f, 0.0f), VECTOR3(0.0f, 0.0f, 0.0f), VECTOR3(0.0f, 0.0f, 0.0f)};
@@ -220,7 +299,6 @@ int main()
          1.0f,  1.0f,  1.0f, 1.0f
     };
 
-    unsigned int quadVAO, quadVBO;
     glGenVertexArrays(1, &quadVAO);
     glGenBuffers(1, &quadVBO);
     glBindVertexArray(quadVAO);
@@ -258,7 +336,34 @@ int main()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    glGenVertexArrays(1, &skyboxVAO);
+    glGenBuffers(1, &skyboxVBO);
+    glBindVertexArray(skyboxVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
+    std::vector<std::string> faces
+{
+    "resources/skybox/right.jpg",
+    "resources/skybox/left.jpg",
+    "resources/skybox/top.jpg",
+    "resources/skybox/bottom.jpg",
+    "resources/skybox/front.jpg",
+    "resources/skybox/back.jpg"
+};
+unsigned int cubemapTexture = loadCubemap(faces);
+
+    Shader skyboxshader("resources/glsl/Skybox_vs.txt","resources/glsl/Skybox_fs.txt");
+    skyboxshader.Link();
+
+    skyboxshader.Use();
+    skyboxshader.SetInt("skybox", 0);
+
+    MATRIX skyboxModel = ScaleMatrix(100.0f, 100.0f, 100.0f);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////    
     t1 = TextureFromFileRGB("resources/image.jpg");
     t2 = TextureFromFileRGBA("resources/image2.png");
     n = TextureFromFileRGB("resources/image_n.png");
@@ -467,6 +572,25 @@ int main()
         }
         glBindVertexArray(0);
 
+//////////////////////////////////////////////////////////////////////////////
+        glDepthFunc(GL_LEQUAL);
+        glDepthMask(GL_FALSE);
+
+        skyboxshader.Use();
+        skyboxshader.SetMatrix("model", skyboxModel);
+        skyboxshader.SetMatrix("view", camera.Matrix());
+        skyboxshader.SetMatrix("projection", projection);
+
+        glBindVertexArray(skyboxVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+
+        glDepthMask(GL_TRUE);
+        glDepthFunc(GL_LESS);
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
         glBindFramebuffer(GL_FRAMEBUFFER, 0); 
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f); 
         glClear(GL_COLOR_BUFFER_BIT);
@@ -491,6 +615,10 @@ int main()
     glDeleteBuffers(1, &EBO);
     glDeleteBuffers(1, &VBO);
     glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &quadVBO);
+    glDeleteVertexArrays(1, &quadVAO);
+    glDeleteBuffers(1, &skyboxVBO);
+    glDeleteVertexArrays(1, &skyboxVAO);
     glDeleteVertexArrays(1, &LightVAO);
     glDeleteFramebuffers(1, &FBO);
     glDeleteTextures(1, &texture_fbo);

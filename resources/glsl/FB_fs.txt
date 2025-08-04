@@ -9,7 +9,9 @@ const float offset = 1.0 / 300.0;
 
 void main()
 { 
-    FragColor = vec4(vec3(1.0 - texture(screenTexture, TexCoords)), 1.0);
+FragColor = texture(screenTexture, TexCoords);
+
+    //FragColor = vec4(vec3(1.0 - texture(screenTexture, TexCoords)), 1.0);
 
 /*
     FragColor = texture(screenTexture, TexCoords);
