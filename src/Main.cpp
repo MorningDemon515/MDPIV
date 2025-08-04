@@ -15,7 +15,7 @@ using namespace MD_Math;
 
 std::string title = "MDPIV";
 
-unsigned int VBO, VAO, EBO ,LightVAO, t1, t2, n;
+unsigned int VBO, VAO, EBO ,LightVAO, t1, t2, n, FBO, texture_fbo, RBO;
 Shader shader = Shader("resources/glsl/vertex.txt", "resources/glsl/fragment.txt");
 Shader L_shader = Shader("resources/glsl/light_vertex.txt", "resources/glsl/light_fragment.txt");
 
@@ -208,6 +208,57 @@ int main()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
     glEnableVertexAttribArray(0);
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    float quadVertices[] = { 
+        // positions   // texCoords
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        -1.0f, -1.0f,  0.0f, 0.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
+
+        -1.0f,  1.0f,  0.0f, 1.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
+         1.0f,  1.0f,  1.0f, 1.0f
+    };
+
+    unsigned int quadVAO, quadVBO;
+    glGenVertexArrays(1, &quadVAO);
+    glGenBuffers(1, &quadVBO);
+    glBindVertexArray(quadVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+    Shader FBshader("resources/glsl/FB_vs.txt", "resources/glsl/FB_fs.txt");
+    FBshader.Link();
+
+    FBshader.Use();
+    FBshader.SetInt("screenTexture", 0);
+
+    glGenFramebuffers(1, &FBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+    
+    glGenTextures(1, &texture_fbo);
+    glBindTexture(GL_TEXTURE_2D, texture_fbo);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, window.width, window.height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_fbo, 0);
+
+    glGenRenderbuffers(1, &RBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, RBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, window.width, window.height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     t1 = TextureFromFileRGB("resources/image.jpg");
     t2 = TextureFromFileRGBA("resources/image2.png");
     n = TextureFromFileRGB("resources/image_n.png");
@@ -318,7 +369,10 @@ int main()
         light_spot.Position = camera.Pos();
         light_spot.Direction = camera.Front();               
 
+        glBindFramebuffer(GL_FRAMEBUFFER, FBO);
         renderer->Clear(0, 0, 0);
+        glEnable(GL_DEPTH_TEST);
+
         shader.Use();
         shader.SetMatrix("view", camera.Matrix());
         shader.SetMatrix("projection", projection);
@@ -412,6 +466,19 @@ int main()
             glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
         }
         glBindVertexArray(0);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0); 
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f); 
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        FBshader.Use();  
+        glBindVertexArray(quadVAO);
+        glDisable(GL_DEPTH_TEST);
+        glBindTexture(GL_TEXTURE_2D, texture_fbo);
+         glActiveTexture(GL_TEXTURE0); // 确保激活0号单元
+         glBindTexture(GL_TEXTURE_2D, texture_fbo);
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);  
         
         renderer->Present(window.window);
         
@@ -425,6 +492,9 @@ int main()
     glDeleteBuffers(1, &VBO);
     glDeleteVertexArrays(1, &VAO);
     glDeleteVertexArrays(1, &LightVAO);
+    glDeleteFramebuffers(1, &FBO);
+    glDeleteTextures(1, &texture_fbo);
+    glDeleteRenderbuffers(1, &RBO);
     delete renderer;
     return 0;
 }
