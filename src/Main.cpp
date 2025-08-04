@@ -251,7 +251,7 @@ int main()
     Input_Init(window.window);
 
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_FRAMEBUFFER_SRGB);
+    //glEnable(GL_FRAMEBUFFER_SRGB);
 
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -310,7 +310,7 @@ int main()
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
-    Shader FBshader("resources/glsl/FB_vs.txt", "resources/glsl/FB_fs.txt");
+    Shader FBshader("resources/glsl/FB_vs.txt", "resources/glsl/HDR_fs.txt");
     FBshader.Link();
 
     FBshader.Use();
@@ -318,15 +318,16 @@ int main()
 
     glGenFramebuffers(1, &FBO);
     glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-    
+
     glGenTextures(1, &texture_fbo);
     glBindTexture(GL_TEXTURE_2D, texture_fbo);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, window.width, window.height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, window.width, window.height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, window.width, window.height, 0, GL_RGBA, GL_FLOAT, NULL);// HDR
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
+    
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_fbo, 0);
 
     glGenRenderbuffers(1, &RBO);
@@ -597,6 +598,7 @@ unsigned int cubemapTexture = loadCubemap(faces);
         glClear(GL_COLOR_BUFFER_BIT);
 
         FBshader.Use();  
+        FBshader.SetFloat("exposure", 1.0f);
         glBindVertexArray(quadVAO);
         glDisable(GL_DEPTH_TEST);
         glBindTexture(GL_TEXTURE_2D, texture_fbo);
