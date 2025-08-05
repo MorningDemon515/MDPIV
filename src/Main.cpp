@@ -13,27 +13,17 @@
 
 #include "stb_image.h"
 
+#include "Mesh.h"
+
 using namespace MD_Math;
 
 std::string title = "MDPIV";
 
-unsigned int VBO, VAO, EBO ,LightVAO, t1, t2, n, FBO, texture_fbo, RBO, quadVAO, quadVBO, skyboxVAO, skyboxVBO;
+unsigned int t1, t2, n;
+unsigned int FBO, texture_fbo, RBO, quadVAO, quadVBO, skyboxVAO, skyboxVBO;
+
 Shader shader = Shader("resources/glsl/PBR_vs.txt", "resources/glsl/PBR_fs.txt");
 Shader L_shader = Shader("resources/glsl/light_vertex.txt", "resources/glsl/light_fragment.txt");
-
-Materials_Texture materials =
-{
-    32.0f
-};
-
-struct Vertex
-{
-    VECTOR3 Position;
-    VECTOR3 Normals;
-    VECTOR2 TexCoords;
-    VECTOR3 Tangent;   
-    VECTOR3 Bitangent; 
-};
 
 VECTOR3 pos[24] = {
 
@@ -73,101 +63,6 @@ std::vector<unsigned int> indices = {
     16,17,18,16,18,19,
     20,21,22,20,22,23 
 };
-
-std::vector<Vertex> vertices;
-
-VECTOR3 cube_Positions[] = {
-    VECTOR3( 0.0f,  0.0f,  0.0f),
-    VECTOR3( 2.0f,  5.0f, -15.0f),
-    VECTOR3(-1.5f, -2.2f, -2.5f),
-    VECTOR3(-3.8f, -2.0f, -12.3f),
-    VECTOR3( 2.4f, -0.4f, -3.5f),
-    VECTOR3(-1.7f,  3.0f, -7.5f),
-    VECTOR3( 1.3f, -2.0f, -2.5f),
-    VECTOR3( 1.5f,  2.0f, -2.5f),
-    VECTOR3( 1.5f,  0.2f, -1.5f),
-    VECTOR3(-1.3f,  1.0f, -1.5f)
-};
-
-VECTOR3 pointLightPositions[] = {
-    VECTOR3( 0.7f,  0.2f,  2.0f),
-    //VECTOR3( 2.3f, -3.3f, -4.0f),
-    //VECTOR3(-4.0f,  2.0f, -12.0f),
-    //VECTOR3( 0.0f,  0.0f, -3.0f)
-};
-
-void ComputeTangents(std::vector<Vertex>& vertices, 
-                      const std::vector<unsigned int>& indices) {
-    for (size_t i = 0; i < indices.size(); i += 3) {
-        Vertex& v0 = vertices[indices[i]];
-        Vertex& v1 = vertices[indices[i+1]];
-        Vertex& v2 = vertices[indices[i+2]];
-        
-        VECTOR3 edge1 = v1.Position - v0.Position;
-        VECTOR3 edge2 = v2.Position - v0.Position;
-        
-        VECTOR2 deltaUV1 = v1.TexCoords - v0.TexCoords;
-        VECTOR2 deltaUV2 = v2.TexCoords - v0.TexCoords;
-        
-        float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
-        
-        VECTOR3 tangent(0.0f, 0.0f, 0.0f);
-        VECTOR3 bitangent(0.0f, 0.0f, 0.0f);
-        
-        tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
-        tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
-        tangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
-        
-        bitangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
-        bitangent.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
-        bitangent.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
-        
-        v0.Tangent += tangent;
-        v1.Tangent += tangent;
-        v2.Tangent += tangent;
-        
-        v0.Bitangent += bitangent;
-        v1.Bitangent += bitangent;
-        v2.Bitangent += bitangent;
-    }
-    
-    for (auto& vertex : vertices) {
-        vertex.Tangent = Vector3Normalized(vertex.Tangent);
-        vertex.Bitangent = Vector3Normalized(vertex.Bitangent);
-    }
-}
-
-unsigned int loadCubemap(std::vector<std::string> faces)
-{
-    unsigned int textureID;
-    glGenTextures(1, &textureID);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-
-    int width, height, nrChannels;
-    for (unsigned int i = 0; i < faces.size(); i++)
-    {
-        unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
-        if (data)
-        {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 
-                         0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
-            );
-            stbi_image_free(data);
-        }
-        else
-        {
-            std::cout << "Cubemap texture failed to load at path: " << faces[i] << std::endl;
-            stbi_image_free(data);
-        }
-    }
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-    return textureID;
-}
 
  float skyboxVertices[] = {
         // positions          
@@ -216,31 +111,8 @@ unsigned int loadCubemap(std::vector<std::string> faces)
 
 int main()
 {
-    Vertex temp = {VECTOR3(0.0f, 0.0f, 0.0f), VECTOR3(0.0f, 0.0f, 0.0f), VECTOR2(0.0f, 0.0f), VECTOR3(0.0f, 0.0f, 0.0f), VECTOR3(0.0f, 0.0f, 0.0f)};
-    VECTOR3 normal(0.0f, 0.0f, 0.0f);
-    
-    int j = 0, c = 0;
-    for(int i = 0; i < 24; i++)
-    {
-        if(i % 4 == 0 && i != 0)
-        {
-            j += 1; 
-            c += 4;
-        }
-            
-        temp.Position = pos[i];
-        normal = -Vector3Normalized(
-            VectorCross(
-                pos[c + 1] - pos[c],
-                pos[c + 2] - pos[c]));
 
-        temp.Normals = normal;
-        temp.TexCoords = texc[i];
-        vertices.push_back(temp);
-    }
-
-    ComputeTangents(vertices, indices);
-
+/////////////////////////////////////////////////////////////////////////
     Window window = Window(800, 600);
     window.SetTitle(title.c_str());
     window.SetICON("resources/icon/MorningDemon.jpg");
@@ -252,41 +124,6 @@ int main()
 
     glEnable(GL_DEPTH_TEST);
     //glEnable(GL_FRAMEBUFFER_SRGB);
-
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
-
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normals));
-    glEnableVertexAttribArray(1);
-
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
-    glEnableVertexAttribArray(2);
-
-    glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tangent));
-
-    glEnableVertexAttribArray(4);
-    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitangent));
-
-    glGenVertexArrays(1, &LightVAO);
-    glBindVertexArray(LightVAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-    glEnableVertexAttribArray(0);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     float quadVertices[] = { 
@@ -310,7 +147,7 @@ int main()
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
-    Shader FBshader("resources/glsl/FB_vs.txt", "resources/glsl/HDR_fs.txt");
+    Shader FBshader("resources/glsl/FB_vs.txt", "resources/glsl/FB_fs.txt");
     FBshader.Link();
 
     FBshader.Use();
@@ -322,7 +159,6 @@ int main()
     glGenTextures(1, &texture_fbo);
     glBindTexture(GL_TEXTURE_2D, texture_fbo);
 
-    //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, window.width, window.height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, window.width, window.height, 0, GL_RGBA, GL_FLOAT, NULL);// HDR
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -346,7 +182,7 @@ int main()
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
-    std::vector<std::string> faces
+    char faces[6][128] = 
 {
     "resources/skybox/right.jpg",
     "resources/skybox/left.jpg",
@@ -355,7 +191,7 @@ int main()
     "resources/skybox/front.jpg",
     "resources/skybox/back.jpg"
 };
-unsigned int cubemapTexture = loadCubemap(faces);
+    unsigned int cubemapTexture = LoadCubeTexture(faces);
 
     Shader skyboxshader("resources/glsl/Skybox_vs.txt","resources/glsl/Skybox_fs.txt");
     skyboxshader.Link();
@@ -391,21 +227,13 @@ unsigned int cubemapTexture = loadCubemap(faces);
     system("color a");
     Camera camera = Camera();
 
-    Light_Point light_point0 = {
-        pointLightPositions[0],
-
-        VECTOR3(0.05f, 0.05f, 0.05f),
-        VECTOR3(0.8f, 0.8f, 0.8f),
-        VECTOR3(1.0f, 1.0f, 1.0f),
-
-        1.0f, 0.09f, 0.032f
-    };
-
     PBR_Light pbr_light = {
-        VECTOR3( 0.7f,  0.2f,  2.0f),
-        VECTOR3(80.0f, 80.0f, 80.0f)
+        VECTOR3( 0.7f,  1.0f,  2.0f),
+        VECTOR3(100.0f, 100.0f, 100.0f)
     };
     
+    Mesh Cube = Mesh(pos, texc, indices);
+    Mesh LCube = Mesh(pos, texc, indices);
 
     while(window.Run())
     {
@@ -429,19 +257,10 @@ unsigned int cubemapTexture = loadCubemap(faces);
         shader.SetMatrix("projection", projection);
         shader.SetMatrix("nm", NM);
 
- 
         shader.SetVec3("ViewPos", camera.Pos());
-
-        //shader.SetFloat("materials.Power", materials.Power);
 
         shader.SetVec3("light.Position", pbr_light.Position);
         shader.SetVec3("light.Color", pbr_light.Color);
-        //shader.SetVec3("light.Ambient", light_point0.Ambient);
-        //shader.SetVec3("light.Diffuse", light_point0.Diffuse);
-        //shader.SetVec3("light.Specular", light_point0.Specular);
-        //shader.SetFloat("light.Constant", light_point0.Constant);
-        //shader.SetFloat("light.Linear", light_point0.Linear);
-        //shader.SetFloat("light.Quadratic", light_point0.Quadratic);
 
         shader.SetInt("Texture", 0);
         SetTexture(t1, GL_TEXTURE0);
@@ -449,32 +268,22 @@ unsigned int cubemapTexture = loadCubemap(faces);
         shader.SetInt("texture_normal", 1);
         SetTexture(n, GL_TEXTURE1);
 
-        glBindVertexArray(VAO);
-        for (unsigned int i = 0; i < 10; i++)
-        {
-         
-            model = TranslationMatrix(cube_Positions[i].x , cube_Positions[i].y, cube_Positions[i].z) * ScaleMatrix(0.5f, 0.5f, 0.5f);
-            shader.SetMatrix("model", model);
+        model = TranslationMatrix(0.0f , 0.0f, 0.0f) * ScaleMatrix(0.5f, 0.5f, 0.5f);
+        shader.SetMatrix("model", model);
 
-            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-        }
-        glBindVertexArray(0);
+        Cube.Draw(shader);
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
         L_shader.Use();
         L_shader.SetMatrix("view", camera.Matrix());
         L_shader.SetMatrix("projection", projection);
-        
-        glBindVertexArray(LightVAO);
-                                    //4
-        for(unsigned int j = 0; j < 1; j++)
-        {
-            L_model = TranslationMatrix(pointLightPositions[j].x, pointLightPositions[j].y, pointLightPositions[j].z) * 
-                     ScaleMatrix(0.2f, 0.2f, 0.2f) * ScaleMatrix(0.5f, 0.5f, 0.5f);
+                                
+        L_model = TranslationMatrix(pbr_light.Position.x, pbr_light.Position.y, pbr_light.Position.z) * 
+                ScaleMatrix(0.2f, 0.2f, 0.2f) * ScaleMatrix(0.5f, 0.5f, 0.5f);
 
-            L_shader.SetMatrix("model", L_model);
-            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-        }
-        glBindVertexArray(0);
+        L_shader.SetMatrix("model", L_model);
+
+        LCube.Draw(L_shader);
 
 //////////////////////////////////////////////////////////////////////////////
         glDepthFunc(GL_LEQUAL);
@@ -504,7 +313,7 @@ unsigned int cubemapTexture = loadCubemap(faces);
         glBindVertexArray(quadVAO);
         glDisable(GL_DEPTH_TEST);
         glBindTexture(GL_TEXTURE_2D, texture_fbo);
-         glActiveTexture(GL_TEXTURE0); // 确保激活0号单元
+         glActiveTexture(GL_TEXTURE0); 
          glBindTexture(GL_TEXTURE_2D, texture_fbo);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);  
@@ -517,17 +326,15 @@ unsigned int cubemapTexture = loadCubemap(faces);
     FreeTexture(t1);
     FreeTexture(t2);
     FreeTexture(n);
-    glDeleteBuffers(1, &EBO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &quadVBO);
     glDeleteVertexArrays(1, &quadVAO);
     glDeleteBuffers(1, &skyboxVBO);
     glDeleteVertexArrays(1, &skyboxVAO);
-    glDeleteVertexArrays(1, &LightVAO);
     glDeleteFramebuffers(1, &FBO);
     glDeleteTextures(1, &texture_fbo);
     glDeleteRenderbuffers(1, &RBO);
+
+    FreeTexture(cubemapTexture);
     delete renderer;
     return 0;
 }
