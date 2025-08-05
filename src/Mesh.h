@@ -32,4 +32,15 @@ public:
     void Draw(Shader& shader);
 };
 
+class Cube
+{
+private:
+    unsigned int VAO, VBO;
+public:
+    Cube();
+    ~Cube();
+
+    void Draw(Shader& shader);
+};
+
 #endif

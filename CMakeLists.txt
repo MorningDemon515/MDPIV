@@ -12,6 +12,8 @@ add_executable(MDPIV
         src/Shader.cpp
         src/Texture.c
         src/Mesh.cpp
+        src/SkyBox.cpp
+        src/IBL.cpp
         src/OGL/Renderer_GL.cpp
         src/D3D9/Renderer_D3D9.cpp
         src/Main.cpp)

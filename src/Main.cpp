@@ -14,13 +14,14 @@
 #include "stb_image.h"
 
 #include "Mesh.h"
+#include "SkyBox.h"
 
 using namespace MD_Math;
 
 std::string title = "MDPIV";
 
 unsigned int t1, t2, n;
-unsigned int FBO, texture_fbo, RBO, quadVAO, quadVBO, skyboxVAO, skyboxVBO;
+unsigned int FBO, texture_fbo, RBO, quadVAO, quadVBO;
 
 Shader shader = Shader("resources/glsl/PBR_vs.txt", "resources/glsl/PBR_fs.txt");
 Shader L_shader = Shader("resources/glsl/light_vertex.txt", "resources/glsl/light_fragment.txt");
@@ -63,51 +64,6 @@ std::vector<unsigned int> indices = {
     16,17,18,16,18,19,
     20,21,22,20,22,23 
 };
-
- float skyboxVertices[] = {
-        // positions          
-        -1.0f,  1.0f, -1.0f,
-        -1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-         1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
-
-        -1.0f, -1.0f,  1.0f,
-        -1.0f, -1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f,  1.0f,
-        -1.0f, -1.0f,  1.0f,
-
-         1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-
-        -1.0f, -1.0f,  1.0f,
-        -1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f, -1.0f,  1.0f,
-        -1.0f, -1.0f,  1.0f,
-
-        -1.0f,  1.0f, -1.0f,
-         1.0f,  1.0f, -1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-        -1.0f,  1.0f,  1.0f,
-        -1.0f,  1.0f, -1.0f,
-
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f,  1.0f,
-         1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f,  1.0f,
-         1.0f, -1.0f,  1.0f
-    };
 
 int main()
 {
@@ -174,14 +130,7 @@ int main()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    glGenVertexArrays(1, &skyboxVAO);
-    glGenBuffers(1, &skyboxVBO);
-    glBindVertexArray(skyboxVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
+/* 
     char faces[6][128] = 
 {
     "resources/skybox/right.jpg",
@@ -191,7 +140,8 @@ int main()
     "resources/skybox/front.jpg",
     "resources/skybox/back.jpg"
 };
-    unsigned int cubemapTexture = LoadCubeTexture(faces);
+ 
+    SkyBox SBox = SkyBox(faces);
 
     Shader skyboxshader("resources/glsl/Skybox_vs.txt","resources/glsl/Skybox_fs.txt");
     skyboxshader.Link();
@@ -200,6 +150,7 @@ int main()
     skyboxshader.SetInt("skybox", 0);
 
     MATRIX skyboxModel = ScaleMatrix(100.0f, 100.0f, 100.0f);
+*/
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////    
     t1 = TextureFromFileRGB("resources/image.jpg");
@@ -207,6 +158,11 @@ int main()
     n = TextureFromFileRGB("resources/image_n.png");
 
     shader.Link();
+    shader.Use();
+    shader.SetInt("Texture", 0);
+    shader.SetInt("texture_normal", 1);
+    shader.SetInt("irradianceMap", 2);
+
     L_shader.Link();
     
     MATRIX projection = PerspectiveMatrixRH(
@@ -232,8 +188,8 @@ int main()
         VECTOR3(100.0f, 100.0f, 100.0f)
     };
     
-    Mesh Cube = Mesh(pos, texc, indices);
-    Mesh LCube = Mesh(pos, texc, indices);
+    Mesh Q_Cube = Mesh(pos, texc, indices);
+    Cube LCube = Cube();
 
     while(window.Run())
     {
@@ -262,16 +218,13 @@ int main()
         shader.SetVec3("light.Position", pbr_light.Position);
         shader.SetVec3("light.Color", pbr_light.Color);
 
-        shader.SetInt("Texture", 0);
         SetTexture(t1, GL_TEXTURE0);
-
-        shader.SetInt("texture_normal", 1);
         SetTexture(n, GL_TEXTURE1);
 
         model = TranslationMatrix(0.0f , 0.0f, 0.0f) * ScaleMatrix(0.5f, 0.5f, 0.5f);
         shader.SetMatrix("model", model);
 
-        Cube.Draw(shader);
+        Q_Cube.Draw(shader);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
         L_shader.Use();
@@ -286,23 +239,14 @@ int main()
         LCube.Draw(L_shader);
 
 //////////////////////////////////////////////////////////////////////////////
-        glDepthFunc(GL_LEQUAL);
-        glDepthMask(GL_FALSE);
-
+/*
         skyboxshader.Use();
         skyboxshader.SetMatrix("model", skyboxModel);
         skyboxshader.SetMatrix("view", camera.Matrix());
         skyboxshader.SetMatrix("projection", projection);
 
-        glBindVertexArray(skyboxVAO);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glBindVertexArray(0);
-
-        glDepthMask(GL_TRUE);
-        glDepthFunc(GL_LESS);
-
+        SBox.Draw(skyboxshader);
+*/
 /////////////////////////////////////////////////////////////////////////////////////////////////
         glBindFramebuffer(GL_FRAMEBUFFER, 0); 
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f); 
@@ -328,13 +272,9 @@ int main()
     FreeTexture(n);
     glDeleteBuffers(1, &quadVBO);
     glDeleteVertexArrays(1, &quadVAO);
-    glDeleteBuffers(1, &skyboxVBO);
-    glDeleteVertexArrays(1, &skyboxVAO);
     glDeleteFramebuffers(1, &FBO);
     glDeleteTextures(1, &texture_fbo);
     glDeleteRenderbuffers(1, &RBO);
-
-    FreeTexture(cubemapTexture);
     delete renderer;
     return 0;
 }
