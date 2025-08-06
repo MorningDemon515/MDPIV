@@ -13,7 +13,7 @@
 
 #include "stb_image.h"
 
-#include "Mesh.h"
+#include "IBL.h"
 #include "SkyBox.h"
 
 using namespace MD_Math;
@@ -21,7 +21,6 @@ using namespace MD_Math;
 std::string title = "MDPIV";
 
 unsigned int t1, t2, n;
-unsigned int FBO, texture_fbo, RBO, quadVAO, quadVBO;
 
 Shader shader = Shader("resources/glsl/PBR_vs.txt", "resources/glsl/PBR_fs.txt");
 Shader L_shader = Shader("resources/glsl/light_vertex.txt", "resources/glsl/light_fragment.txt");
@@ -82,87 +81,11 @@ int main()
     //glEnable(GL_FRAMEBUFFER_SRGB);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Cube skybox = Cube();
-
-    Shader skyboxshader("resources/glsl/ToCubemap_vs.txt","resources/glsl/ToCubemap_fs.txt");
-    skyboxshader.Link();
-
-    //MATRIX skyboxModel = ScaleMatrix(100.0f, 100.0f, 100.0f);
-    
-    glGenFramebuffers(1, &FBO);
-    glGenRenderbuffers(1, &RBO);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-    glBindRenderbuffer(GL_RENDERBUFFER, RBO);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, RBO); 
-
-    stbi_set_flip_vertically_on_load(true);
-    int width, height, nrComponents;
-    float *data = stbi_loadf("resources/skybox/02.hdr", &width, &height, &nrComponents, 0);
-    unsigned int hdrTexture;
-    glGenTextures(1, &hdrTexture);
-    glBindTexture(GL_TEXTURE_2D, hdrTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, data); 
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    stbi_image_free(data);
-
-    unsigned int envCubemap;
-    glGenTextures(1, &envCubemap);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-    for (unsigned int i = 0; i < 6; ++i)
-    {
-        // note that we store each face with 16 bit floating point values
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 
-                     512, 512, 0, GL_RGB, GL_FLOAT, nullptr);
-    }
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    MATRIX captureProjection = PerspectiveMatrixRH(AngularToRadian(90.0f), 1.0f, 0.1f, 10.0f);
-    MATRIX captureViews[] = 
-    {
-       ViewMatrixRH(VECTOR3(0.0f, 0.0f, 0.0f), VECTOR3( 1.0f,  0.0f,  0.0f), VECTOR3(0.0f, -1.0f,  0.0f)),
-       ViewMatrixRH(VECTOR3(0.0f, 0.0f, 0.0f), VECTOR3(-1.0f,  0.0f,  0.0f), VECTOR3(0.0f, -1.0f,  0.0f)),
-       ViewMatrixRH(VECTOR3(0.0f, 0.0f, 0.0f), VECTOR3( 0.0f,  1.0f,  0.0f), VECTOR3(0.0f,  0.0f,  1.0f)),
-       ViewMatrixRH(VECTOR3(0.0f, 0.0f, 0.0f), VECTOR3( 0.0f, -1.0f,  0.0f), VECTOR3(0.0f,  0.0f, -1.0f)),
-       ViewMatrixRH(VECTOR3(0.0f, 0.0f, 0.0f), VECTOR3( 0.0f,  0.0f,  1.0f), VECTOR3(0.0f, -1.0f,  0.0f)),
-       ViewMatrixRH(VECTOR3(0.0f, 0.0f, 0.0f), VECTOR3( 0.0f,  0.0f, -1.0f), VECTOR3(0.0f, -1.0f,  0.0f))
-    };
-
-    // convert HDR equirectangular environment map to cubemap equivalent
-    skyboxshader.Use();
-    skyboxshader.SetInt("equirectangularMap", 0);
-    skyboxshader.SetMatrix("projection", captureProjection);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, hdrTexture);
-
-    glViewport(0, 0, 512, 512); // don't forget to configure the viewport to the capture dimensions.
-    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-    for (unsigned int i = 0; i < 6; ++i)
-    {
-        skyboxshader.SetMatrix("view", captureViews[i]);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 
-                               GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        skybox.Draw(skyboxshader); // renders a 1x1 cube
-    }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);  
-
     Cube FinalSkyBox = Cube();
     Shader FinalSkyBoxShader = Shader("resources/glsl/Skybox_vs.txt","resources/glsl/Skybox_fs.txt");
-    FinalSkyBoxShader.Link();
-    FinalSkyBoxShader.Use();
-    FinalSkyBoxShader.SetInt("equirectangularMap", 0);
+
+    IBL ibl = IBL("resources/skybox/02.hdr");
+    ibl.Set(FinalSkyBoxShader);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////    
     t1 = TextureFromFileRGB("resources/image.jpg");
@@ -203,9 +126,7 @@ int main()
     Mesh Q_Cube = Mesh(pos, texc, indices);
     Cube LCube = Cube();
 
-    int scrWidth, scrHeight;
-    glfwGetFramebufferSize(window.window, &scrWidth, &scrHeight);
-    glViewport(0, 0, scrWidth, scrHeight);
+    glViewport(0, 0, window.width, window.height);
 
     while(window.Run())
     {
@@ -255,14 +176,10 @@ int main()
         LCube.Draw(L_shader);
 
 //////////////////////////////////////////////////////////////////////////////
-
         FinalSkyBoxShader.Use();
         FinalSkyBoxShader.SetMatrix("view", camera.Matrix());
         FinalSkyBoxShader.SetMatrix("projection", projection);
-        
-        glActiveTexture(GL_TEXTURE0); 
-        glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-        FinalSkyBox.Draw(FinalSkyBoxShader);
+        ibl.Draw(FinalSkyBox, FinalSkyBoxShader);
         
         renderer->Present(window.window);
         
@@ -272,11 +189,6 @@ int main()
     FreeTexture(t1);
     FreeTexture(t2);
     FreeTexture(n);
-    glDeleteBuffers(1, &quadVBO);
-    glDeleteVertexArrays(1, &quadVAO);
-    glDeleteFramebuffers(1, &FBO);
-    glDeleteTextures(1, &texture_fbo);
-    glDeleteRenderbuffers(1, &RBO);
     delete renderer;
     return 0;
 }
