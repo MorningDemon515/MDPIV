@@ -16,6 +16,8 @@ public:
     
     void Set(Shader& FinalSkyBoxShader);
     void Draw(Cube& FinalSkyBox, Shader& FinalSkyBoxShader);
+
+    unsigned int irradianceMap;
 };
 
 

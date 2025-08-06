@@ -157,6 +157,7 @@ int main()
 
         SetTexture(t1, GL_TEXTURE0);
         SetTexture(n, GL_TEXTURE1);
+        SetCubeTexture(ibl.irradianceMap, GL_TEXTURE2);
 
         model = TranslationMatrix(0.0f , 0.0f, 0.0f) * ScaleMatrix(0.5f, 0.5f, 0.5f);
         shader.SetMatrix("model", model);

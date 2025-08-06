@@ -74,6 +74,12 @@ void SetTexture(unsigned int id ,unsigned int level)
     glBindTexture(GL_TEXTURE_2D, id);
 }
 
+void SetCubeTexture(unsigned int id ,unsigned int level)
+{
+    glActiveTexture(level);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, id);
+}
+
 void FreeTexture(unsigned int id)
 {
     glDeleteTextures(1, &id);

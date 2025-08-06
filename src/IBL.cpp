@@ -81,6 +81,45 @@ IBL::IBL(const char* hdr)
         skybox.Draw(skyboxshader); // renders a 1x1 cube
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    
+    Cube irrCube = Cube();
+    Shader irradianceShader = Shader("resources/glsl/ToCubemap_vs.txt","resources/glsl/irradiance_fs.txt");
+
+    glGenTextures(1, &irradianceMap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
+    for (unsigned int i = 0; i < 6; ++i)
+    {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 32, 32, 0, 
+                     GL_RGB, GL_FLOAT, nullptr);
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, RBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 32, 32);  
+
+    irradianceShader.Use();
+    irradianceShader.SetInt("environmentMap", 0);
+    irradianceShader.SetMatrix("projection", captureProjection);    
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, CubemapTexture);
+
+    glViewport(0, 0, 32, 32); // don't forget to configure the viewport to the capture dimensions.
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+    for (unsigned int i = 0; i < 6; ++i)
+    {
+        irradianceShader.SetMatrix("view", captureViews[i]);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 
+                               GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, irradianceMap, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        irrCube.Draw(irradianceShader);
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 }
 
@@ -90,6 +129,7 @@ IBL::~IBL()
     glDeleteRenderbuffers(1, &RBO);
     glDeleteTextures(1, &HDRtexture);
     glDeleteTextures(1, &CubemapTexture);
+    glDeleteTextures(1, &irradianceMap);
 }
 
 void IBL::Set(Shader& FinalSkyBoxShader)
