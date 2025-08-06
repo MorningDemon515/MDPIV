@@ -67,7 +67,6 @@ std::vector<unsigned int> indices = {
 
 int main()
 {
-
 /////////////////////////////////////////////////////////////////////////
     Window window = Window(800, 600);
     window.SetTitle(title.c_str());
@@ -79,78 +78,91 @@ int main()
     Input_Init(window.window);
 
     glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
     //glEnable(GL_FRAMEBUFFER_SRGB);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    float quadVertices[] = { 
-        // positions   // texCoords
-        -1.0f,  1.0f,  0.0f, 1.0f,
-        -1.0f, -1.0f,  0.0f, 0.0f,
-         1.0f, -1.0f,  1.0f, 0.0f,
+    Cube skybox = Cube();
 
-        -1.0f,  1.0f,  0.0f, 1.0f,
-         1.0f, -1.0f,  1.0f, 0.0f,
-         1.0f,  1.0f,  1.0f, 1.0f
-    };
-
-    glGenVertexArrays(1, &quadVAO);
-    glGenBuffers(1, &quadVBO);
-    glBindVertexArray(quadVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-
-    Shader FBshader("resources/glsl/FB_vs.txt", "resources/glsl/FB_fs.txt");
-    FBshader.Link();
-
-    FBshader.Use();
-    FBshader.SetInt("screenTexture", 0);
-
-    glGenFramebuffers(1, &FBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-
-    glGenTextures(1, &texture_fbo);
-    glBindTexture(GL_TEXTURE_2D, texture_fbo);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, window.width, window.height, 0, GL_RGBA, GL_FLOAT, NULL);// HDR
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_fbo, 0);
-
-    glGenRenderbuffers(1, &RBO);
-    glBindRenderbuffer(GL_RENDERBUFFER, RBO);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, window.width, window.height);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/* 
-    char faces[6][128] = 
-{
-    "resources/skybox/right.jpg",
-    "resources/skybox/left.jpg",
-    "resources/skybox/top.jpg",
-    "resources/skybox/bottom.jpg",
-    "resources/skybox/front.jpg",
-    "resources/skybox/back.jpg"
-};
- 
-    SkyBox SBox = SkyBox(faces);
-
-    Shader skyboxshader("resources/glsl/Skybox_vs.txt","resources/glsl/Skybox_fs.txt");
+    Shader skyboxshader("resources/glsl/ToCubemap_vs.txt","resources/glsl/ToCubemap_fs.txt");
     skyboxshader.Link();
 
-    skyboxshader.Use();
-    skyboxshader.SetInt("skybox", 0);
+    //MATRIX skyboxModel = ScaleMatrix(100.0f, 100.0f, 100.0f);
+    
+    glGenFramebuffers(1, &FBO);
+    glGenRenderbuffers(1, &RBO);
 
-    MATRIX skyboxModel = ScaleMatrix(100.0f, 100.0f, 100.0f);
-*/
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, RBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, RBO); 
+
+    stbi_set_flip_vertically_on_load(true);
+    int width, height, nrComponents;
+    float *data = stbi_loadf("resources/skybox/02.hdr", &width, &height, &nrComponents, 0);
+    unsigned int hdrTexture;
+    glGenTextures(1, &hdrTexture);
+    glBindTexture(GL_TEXTURE_2D, hdrTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, data); 
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    stbi_image_free(data);
+
+    unsigned int envCubemap;
+    glGenTextures(1, &envCubemap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+    for (unsigned int i = 0; i < 6; ++i)
+    {
+        // note that we store each face with 16 bit floating point values
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 
+                     512, 512, 0, GL_RGB, GL_FLOAT, nullptr);
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    MATRIX captureProjection = PerspectiveMatrixRH(AngularToRadian(90.0f), 1.0f, 0.1f, 10.0f);
+    MATRIX captureViews[] = 
+    {
+       ViewMatrixRH(VECTOR3(0.0f, 0.0f, 0.0f), VECTOR3( 1.0f,  0.0f,  0.0f), VECTOR3(0.0f, -1.0f,  0.0f)),
+       ViewMatrixRH(VECTOR3(0.0f, 0.0f, 0.0f), VECTOR3(-1.0f,  0.0f,  0.0f), VECTOR3(0.0f, -1.0f,  0.0f)),
+       ViewMatrixRH(VECTOR3(0.0f, 0.0f, 0.0f), VECTOR3( 0.0f,  1.0f,  0.0f), VECTOR3(0.0f,  0.0f,  1.0f)),
+       ViewMatrixRH(VECTOR3(0.0f, 0.0f, 0.0f), VECTOR3( 0.0f, -1.0f,  0.0f), VECTOR3(0.0f,  0.0f, -1.0f)),
+       ViewMatrixRH(VECTOR3(0.0f, 0.0f, 0.0f), VECTOR3( 0.0f,  0.0f,  1.0f), VECTOR3(0.0f, -1.0f,  0.0f)),
+       ViewMatrixRH(VECTOR3(0.0f, 0.0f, 0.0f), VECTOR3( 0.0f,  0.0f, -1.0f), VECTOR3(0.0f, -1.0f,  0.0f))
+    };
+
+    // convert HDR equirectangular environment map to cubemap equivalent
+    skyboxshader.Use();
+    skyboxshader.SetInt("equirectangularMap", 0);
+    skyboxshader.SetMatrix("projection", captureProjection);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, hdrTexture);
+
+    glViewport(0, 0, 512, 512); // don't forget to configure the viewport to the capture dimensions.
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+    for (unsigned int i = 0; i < 6; ++i)
+    {
+        skyboxshader.SetMatrix("view", captureViews[i]);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 
+                               GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        skybox.Draw(skyboxshader); // renders a 1x1 cube
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);  
+
+    Cube FinalSkyBox = Cube();
+    Shader FinalSkyBoxShader = Shader("resources/glsl/Skybox_vs.txt","resources/glsl/Skybox_fs.txt");
+    FinalSkyBoxShader.Link();
+    FinalSkyBoxShader.Use();
+    FinalSkyBoxShader.SetInt("equirectangularMap", 0);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////    
     t1 = TextureFromFileRGB("resources/image.jpg");
@@ -164,19 +176,19 @@ int main()
     shader.SetInt("irradianceMap", 2);
 
     L_shader.Link();
-    
-    MATRIX projection = PerspectiveMatrixRH(
-        AngularToRadian(45.0f),
-        (float)window.width / (float)window.height,
-        0.1f,
-        100.0f
-    );
 
     float speed = 3.0f;
     MATRIX model = IdentityMatrix();
     MATRIX NM = NormalMatrix(model);
 
     MATRIX L_model = IdentityMatrix();
+
+    MATRIX projection = PerspectiveMatrixRH(
+        AngularToRadian(45.0f),
+        (float)window.width / (float)window.height,
+        0.1f,
+        100.0f
+    );
     
     static double lastTime = glfwGetTime();
 
@@ -191,6 +203,10 @@ int main()
     Mesh Q_Cube = Mesh(pos, texc, indices);
     Cube LCube = Cube();
 
+    int scrWidth, scrHeight;
+    glfwGetFramebufferSize(window.window, &scrWidth, &scrHeight);
+    glViewport(0, 0, scrWidth, scrHeight);
+
     while(window.Run())
     {
         double currentTime = glfwGetTime();
@@ -204,9 +220,9 @@ int main()
 
         camera.Move(speed * deltaTime, 50.0f * deltaTime);                
 
-        glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+        //glBindFramebuffer(GL_FRAMEBUFFER, FBO);
         renderer->Clear(0, 0, 0);
-        glEnable(GL_DEPTH_TEST);
+        //glEnable(GL_DEPTH_TEST);
 
         shader.Use();
         shader.SetMatrix("view", camera.Matrix());
@@ -239,28 +255,14 @@ int main()
         LCube.Draw(L_shader);
 
 //////////////////////////////////////////////////////////////////////////////
-/*
-        skyboxshader.Use();
-        skyboxshader.SetMatrix("model", skyboxModel);
-        skyboxshader.SetMatrix("view", camera.Matrix());
-        skyboxshader.SetMatrix("projection", projection);
 
-        SBox.Draw(skyboxshader);
-*/
-/////////////////////////////////////////////////////////////////////////////////////////////////
-        glBindFramebuffer(GL_FRAMEBUFFER, 0); 
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f); 
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        FBshader.Use();  
-        FBshader.SetFloat("exposure", 1.0f);
-        glBindVertexArray(quadVAO);
-        glDisable(GL_DEPTH_TEST);
-        glBindTexture(GL_TEXTURE_2D, texture_fbo);
-         glActiveTexture(GL_TEXTURE0); 
-         glBindTexture(GL_TEXTURE_2D, texture_fbo);
-
-        glDrawArrays(GL_TRIANGLES, 0, 6);  
+        FinalSkyBoxShader.Use();
+        FinalSkyBoxShader.SetMatrix("view", camera.Matrix());
+        FinalSkyBoxShader.SetMatrix("projection", projection);
+        
+        glActiveTexture(GL_TEXTURE0); 
+        glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+        FinalSkyBox.Draw(FinalSkyBoxShader);
         
         renderer->Present(window.window);
         
