@@ -18,6 +18,8 @@ public:
     void Draw(Cube& FinalSkyBox, Shader& FinalSkyBoxShader);
 
     unsigned int irradianceMap;
+    unsigned int prefilterMap;
+    unsigned int brdfLUTTexture;
 };
 
 

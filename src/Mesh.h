@@ -43,4 +43,15 @@ public:
     void Draw(Shader& shader);
 };
 
+class Quad
+{
+private:
+    unsigned int VAO, VBO;
+public:
+    Quad();
+    ~Quad();
+
+    void Draw(Shader& shader);
+};
+
 #endif

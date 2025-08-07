@@ -5,6 +5,9 @@
 
 #include "stb_image.h"
 
+#include <iostream>
+#include <cmath>
+
 using namespace MD_Math;
 
 IBL::IBL(const char* hdr)
@@ -48,7 +51,8 @@ IBL::IBL(const char* hdr)
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    //glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     MATRIX captureProjection = PerspectiveMatrixRH(AngularToRadian(90.0f), 1.0f, 0.1f, 10.0f);
@@ -81,6 +85,9 @@ IBL::IBL(const char* hdr)
         skybox.Draw(skyboxshader); // renders a 1x1 cube
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glBindTexture(GL_TEXTURE_CUBE_MAP, CubemapTexture);
+    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
     
     Cube irrCube = Cube();
     Shader irradianceShader = Shader("resources/glsl/ToCubemap_vs.txt","resources/glsl/irradiance_fs.txt");
@@ -101,7 +108,8 @@ IBL::IBL(const char* hdr)
     glBindFramebuffer(GL_FRAMEBUFFER, FBO);
     glBindRenderbuffer(GL_RENDERBUFFER, RBO);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 32, 32);  
-
+    
+    irradianceShader.Link();
     irradianceShader.Use();
     irradianceShader.SetInt("environmentMap", 0);
     irradianceShader.SetMatrix("projection", captureProjection);    
@@ -121,6 +129,80 @@ IBL::IBL(const char* hdr)
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    glGenTextures(1, &prefilterMap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
+    for (unsigned int i = 0; i < 6; ++i) 
+    {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 128, 128, 0, GL_RGB, GL_FLOAT, nullptr);
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); 
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
+    Cube prefilterCube = Cube();
+    
+    Shader prefilterShader = Shader("resources/glsl/ToCubemap_vs.txt", "resources/glsl/prefilter_fs.txt");
+    prefilterShader.Link();
+    prefilterShader.Use();
+    prefilterShader.SetInt("environmentMap", 0);
+    prefilterShader.SetMatrix("projection", captureProjection);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, CubemapTexture);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+    unsigned int maxMipLevels = 5;
+    for (unsigned int mip = 0; mip < maxMipLevels; ++mip)
+    {
+        // reisze framebuffer according to mip-level size.
+        unsigned int mipWidth  = 128 * std::pow(0.5, mip);
+        unsigned int mipHeight = 128 * std::pow(0.5, mip);
+        glBindRenderbuffer(GL_RENDERBUFFER, RBO);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
+        glViewport(0, 0, mipWidth, mipHeight);
+
+        float roughness = (float)mip / (float)(maxMipLevels - 1);
+        prefilterShader.SetFloat("roughness", roughness);
+        for (unsigned int i = 0; i < 6; ++i)
+        {
+            prefilterShader.SetMatrix("view", captureViews[i]);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 
+                                   GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, prefilterMap, mip);
+
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            prefilterCube.Draw(prefilterShader);
+        }
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);   
+
+    glGenTextures(1, &brdfLUTTexture);
+    // pre-allocate enough memory for the LUT texture.
+    glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, 512, 512, 0, GL_RG, GL_FLOAT, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    Quad brdf_quad = Quad();
+    Shader brdfShader = Shader("resources/glsl/brdf_vs.txt", "resources/glsl/brdf_fs.txt");
+    brdfShader.Link();
+
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, RBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUTTexture, 0);
+    
+    glViewport(0, 0, 512, 512);
+    brdfShader.Use();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    brdf_quad.Draw(brdfShader);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);  
+
 }
 
 IBL::~IBL()
@@ -130,13 +212,15 @@ IBL::~IBL()
     glDeleteTextures(1, &HDRtexture);
     glDeleteTextures(1, &CubemapTexture);
     glDeleteTextures(1, &irradianceMap);
+    glDeleteTextures(1, &prefilterMap);
+    glDeleteTextures(1, &brdfLUTTexture);
 }
 
 void IBL::Set(Shader& FinalSkyBoxShader)
 {
     FinalSkyBoxShader.Link();
     FinalSkyBoxShader.Use();
-    FinalSkyBoxShader.SetInt("equirectangularMap", 0);
+    FinalSkyBoxShader.SetInt("environmentMap", 0);
 }
 
 void IBL::Draw(Cube& FinalSkyBox, Shader& FinalSkyBoxShader)

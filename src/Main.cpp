@@ -78,6 +78,7 @@ int main()
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);  
     //glEnable(GL_FRAMEBUFFER_SRGB);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -97,6 +98,8 @@ int main()
     shader.SetInt("Texture", 0);
     shader.SetInt("texture_normal", 1);
     shader.SetInt("irradianceMap", 2);
+    shader.SetInt("prefilterMap", 3);
+    shader.SetInt("brdfLUT", 4);
 
     L_shader.Link();
 
@@ -158,6 +161,8 @@ int main()
         SetTexture(t1, GL_TEXTURE0);
         SetTexture(n, GL_TEXTURE1);
         SetCubeTexture(ibl.irradianceMap, GL_TEXTURE2);
+        SetCubeTexture(ibl.prefilterMap, GL_TEXTURE3);
+        SetTexture(ibl.brdfLUTTexture, GL_TEXTURE4);
 
         model = TranslationMatrix(0.0f , 0.0f, 0.0f) * ScaleMatrix(0.5f, 0.5f, 0.5f);
         shader.SetMatrix("model", model);
