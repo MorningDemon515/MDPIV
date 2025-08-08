@@ -14,6 +14,7 @@ add_executable(MDPIV
         src/Mesh.cpp
         src/SkyBox.cpp
         src/IBL.cpp
+        src/Model.cpp
         src/OGL/Renderer_GL.cpp
         src/D3D9/Renderer_D3D9.cpp
         src/Main.cpp)
@@ -21,10 +22,13 @@ add_executable(MDPIV
 target_compile_options(MDPIV PRIVATE -O3)
 
 include_directories(${CMAKE_SOURCE_DIR}/src/glfw/include
-                        ${CMAKE_SOURCE_DIR}/src/glad/include)
+                        ${CMAKE_SOURCE_DIR}/src/glad/include
+                        ${CMAKE_SOURCE_DIR}/src/assimp/include)
 
 target_link_libraries(MDPIV 
             ${CMAKE_SOURCE_DIR}/src/glfw/libglfw3.a
+            ${CMAKE_SOURCE_DIR}/src/assimp/lib/libassimp.dll.a
+            ${CMAKE_SOURCE_DIR}/src/assimp/lib/libunit.dll.a
             opengl32
             d3d9)
 

@@ -16,20 +16,44 @@ struct Vertex
     MD_Math::VECTOR3 Bitangent; 
 };
 
+struct Texture {
+    unsigned int id;
+    std::string type;
+    std::string path;
+};
+
 class Mesh
 {
 private:
     unsigned int VAO, VBO, EBO;
     std::vector<Vertex> vertices;
+    std::vector<Texture> textures;
+    unsigned int ind;
 
     void ComputeTangents(std::vector<Vertex>& vertices, 
                       const std::vector<unsigned int>& indices);
+          
 public:
     Mesh(){};
-    Mesh(MD_Math::VECTOR3 pos[], MD_Math::VECTOR2 texc[], std::vector<unsigned int> indices);
+    Mesh(std::vector<MD_Math::VECTOR3> pos, 
+        std::vector<MD_Math::VECTOR2> texc, 
+        std::vector<Texture> texs,
+        std::vector<unsigned int> indices);
+
+    Mesh(std::vector<MD_Math::VECTOR3> pos, 
+        std::vector<MD_Math::VECTOR2> texc,
+        std::vector<MD_Math::VECTOR3> normal, 
+        std::vector<MD_Math::VECTOR3> tangent, 
+        std::vector<MD_Math::VECTOR3> bitangent, 
+        std::vector<Texture> texs,
+        std::vector<unsigned int> indices);    
+
     ~Mesh();
 
     void Draw(Shader& shader);
+    void Free();
+
+    unsigned int texCount;
 };
 
 class Cube

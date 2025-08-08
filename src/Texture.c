@@ -1,6 +1,6 @@
 #include "Texture.h"
 
-#include "LoadImage.h"
+#include "stb_image.h"
 
 #include <glad/glad.h>
 
@@ -8,64 +8,41 @@
 extern "C" {
 #endif
 
-unsigned int TextureFromFileRGB(const char* filename)
+unsigned int TextureFromFile(const char* filename)
 {
-    unsigned int texture;
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
 
-    glGenTextures(1,&texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    int width, height, nrComponents;
+    unsigned char *data = stbi_load(filename, &width, &height, &nrComponents, 0);
+    if (data)
+    {
+        GLenum format;
+        if (nrComponents == 1)
+            format = GL_RED;
+        else if (nrComponents == 3)
+            format = GL_RGB;
+        else if (nrComponents == 4)
+            format = GL_RGBA;
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);   
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
 
-    Image tex;
-    Load_Image_RGB(filename, &tex);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GL_RGB,
-        tex.width, tex.height,
-        0, GL_RGB,
-        GL_UNSIGNED_BYTE,
-        tex.pixels
-    );
+        stbi_image_free(data);
+    }
+    else
+    {
+        printf("Texture failed to load at path: %s \n", filename);
+        stbi_image_free(data);
+    }
 
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    return texture;
-}
-
-unsigned int TextureFromFileRGBA(const char* filename)
-{
-    unsigned int texture;
-
-    glGenTextures(1,&texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);   
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    Image tex;
-    Load_Image_RGBA(filename, &tex);
-
-    glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GL_RGBA,
-        tex.width, tex.height,
-        0, GL_RGBA,
-        GL_UNSIGNED_BYTE,
-        tex.pixels
-    );
-
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    return texture;
+    return textureID;
 }
 
 void SetTexture(unsigned int id ,unsigned int level)
@@ -91,13 +68,21 @@ unsigned int LoadCubeTexture(char faces[6][128])
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 
-    Image tex;
+    int width, height, nrComponents;
     for (unsigned int i = 0; i < 6; i++)
     {
-        Load_Image_RGB(faces[i], &tex);
+        unsigned char *data = stbi_load(faces[i], &width, &height, &nrComponents, 0);
+
+        GLenum format;
+        if (nrComponents == 1)
+            format = GL_RED;
+        else if (nrComponents == 3)
+            format = GL_RGB;
+        else if (nrComponents == 4)
+            format = GL_RGBA;
 
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 
-                     0, GL_RGB, tex.width, tex.height, 0, GL_RGB, GL_UNSIGNED_BYTE, tex.pixels
+                     0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data
         );
        
     }

@@ -7,8 +7,9 @@ in vec3 Normal;
 in vec3 FragPos;
 in vec2 TexCoords;
 
-uniform sampler2D Texture;
-uniform sampler2D texture_normal;  
+uniform sampler2D texture_diffuse0;
+//uniform sampler2D texture_normal0;  
+
 uniform samplerCube irradianceMap;
 uniform samplerCube prefilterMap;
 uniform sampler2D   brdfLUT;  
@@ -31,15 +32,15 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness);
 
 void main()
 {
-    //vec3 albedo = pow(texture(Texture, TexCoords).rgb , vec3(2.2));
-    vec3 albedo = vec3(1.0f, 0.0f, 0.0f);
-    float metallic = 0.8f;
-    float roughness = 0.1f;
+    vec3 albedo = pow(texture(texture_diffuse0, TexCoords).rgb , vec3(2.2));
+    //vec3 albedo = vec3(1.0f, 0.0f, 0.0f);
+    float metallic = 0.1f;
+    float roughness = 0.9f;
     float ao = 1.0f;
 
     vec3 N = normalize(Normal);
-    //vec3 N = texture(texture_normal, TexCoords).xyz * 2.0 - 1.0;
-    //N = normalize(TBN * N);
+    //vec3 N = texture(texture_normal0, TexCoords).xyz * 2.0 - 1.0;
+   // N = normalize(TBN * N);
     vec3 V = normalize(ViewPos - FragPos);
     vec3 R = reflect(-V, N);   
 

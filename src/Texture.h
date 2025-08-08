@@ -5,8 +5,7 @@
 extern "C" {
 #endif
 
-unsigned int TextureFromFileRGB(const char* filename);
-unsigned int TextureFromFileRGBA(const char* filename);
+unsigned int TextureFromFile(const char* filename);
 void SetTexture(unsigned int id ,unsigned int level);
 void SetCubeTexture(unsigned int id ,unsigned int level);
 void FreeTexture(unsigned int id);

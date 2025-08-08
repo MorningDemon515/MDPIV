@@ -15,17 +15,16 @@
 
 #include "IBL.h"
 #include "SkyBox.h"
+#include "Model.h"
 
 using namespace MD_Math;
 
 std::string title = "MDPIV";
 
-unsigned int t1, t2, n;
-
 Shader shader = Shader("resources/glsl/PBR_vs.txt", "resources/glsl/PBR_fs.txt");
 Shader L_shader = Shader("resources/glsl/light_vertex.txt", "resources/glsl/light_fragment.txt");
 
-VECTOR3 pos[24] = {
+std::vector<VECTOR3> pos = {
 
     {-1.0f, -1.0f, -1.0f}, { 1.0f, -1.0f, -1.0f}, { 1.0f,  1.0f, -1.0f}, {-1.0f,  1.0f, -1.0f},
    
@@ -40,7 +39,7 @@ VECTOR3 pos[24] = {
     {-1.0f,  1.0f, -1.0f}, { 1.0f,  1.0f, -1.0f}, { 1.0f,  1.0f,  1.0f}, {-1.0f,  1.0f,  1.0f}
 };
 
-VECTOR2 texc[24] = {
+std::vector<VECTOR2> texc = {
    
     {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f},
   
@@ -88,26 +87,29 @@ int main()
     IBL ibl = IBL("resources/skybox/02.hdr");
     ibl.Set(FinalSkyBoxShader);
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////    
-    t1 = TextureFromFileRGB("resources/image.jpg");
-    t2 = TextureFromFileRGBA("resources/image2.png");
-    n = TextureFromFileRGB("resources/image_n.png");
+//////////////////////////////////////////////////////////////////////////////////////////////////////////  
+    PBR_Light pbr_light = {
+        VECTOR3( 0.7f,  1.0f,  2.0f),
+        VECTOR3(100.0f, 100.0f, 100.0f)
+    };
+
+    Model scp173 = Model("resources/model/scp-173.obj");
 
     shader.Link();
     shader.Use();
-    shader.SetInt("Texture", 0);
-    shader.SetInt("texture_normal", 1);
-    shader.SetInt("irradianceMap", 2);
-    shader.SetInt("prefilterMap", 3);
-    shader.SetInt("brdfLUT", 4);
+
+    shader.SetInt("irradianceMap", scp173.texCount);
+    shader.SetInt("prefilterMap", scp173.texCount + 1);
+    shader.SetInt("brdfLUT", scp173.texCount + 2);
 
     L_shader.Link();
 
     float speed = 3.0f;
-    MATRIX model = IdentityMatrix();
+    MATRIX model = ScaleMatrix(0.1f, 0.1f, 0.1f);
     MATRIX NM = NormalMatrix(model);
 
-    MATRIX L_model = IdentityMatrix();
+    MATRIX L_model = TranslationMatrix(pbr_light.Position.x, pbr_light.Position.y, pbr_light.Position.z) * 
+                ScaleMatrix(0.2f, 0.2f, 0.2f) * ScaleMatrix(0.5f, 0.5f, 0.5f);
 
     MATRIX projection = PerspectiveMatrixRH(
         AngularToRadian(45.0f),
@@ -120,13 +122,7 @@ int main()
 
     system("color a");
     Camera camera = Camera();
-
-    PBR_Light pbr_light = {
-        VECTOR3( 0.7f,  1.0f,  2.0f),
-        VECTOR3(100.0f, 100.0f, 100.0f)
-    };
     
-    Mesh Q_Cube = Mesh(pos, texc, indices);
     Cube LCube = Cube();
 
     glViewport(0, 0, window.width, window.height);
@@ -144,9 +140,7 @@ int main()
 
         camera.Move(speed * deltaTime, 50.0f * deltaTime);                
 
-        //glBindFramebuffer(GL_FRAMEBUFFER, FBO);
         renderer->Clear(0, 0, 0);
-        //glEnable(GL_DEPTH_TEST);
 
         shader.Use();
         shader.SetMatrix("view", camera.Matrix());
@@ -158,25 +152,19 @@ int main()
         shader.SetVec3("light.Position", pbr_light.Position);
         shader.SetVec3("light.Color", pbr_light.Color);
 
-        SetTexture(t1, GL_TEXTURE0);
-        SetTexture(n, GL_TEXTURE1);
-        SetCubeTexture(ibl.irradianceMap, GL_TEXTURE2);
-        SetCubeTexture(ibl.prefilterMap, GL_TEXTURE3);
-        SetTexture(ibl.brdfLUTTexture, GL_TEXTURE4);
+        SetCubeTexture(ibl.irradianceMap, GL_TEXTURE0 + scp173.texCount);
+        SetCubeTexture(ibl.prefilterMap, GL_TEXTURE0 + scp173.texCount + 1);
+        SetTexture(ibl.brdfLUTTexture, GL_TEXTURE0 + scp173.texCount + 2);
 
-        model = TranslationMatrix(0.0f , 0.0f, 0.0f) * ScaleMatrix(0.5f, 0.5f, 0.5f);
         shader.SetMatrix("model", model);
 
-        Q_Cube.Draw(shader);
+        scp173.Draw(shader);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
         L_shader.Use();
         L_shader.SetMatrix("view", camera.Matrix());
         L_shader.SetMatrix("projection", projection);
                                 
-        L_model = TranslationMatrix(pbr_light.Position.x, pbr_light.Position.y, pbr_light.Position.z) * 
-                ScaleMatrix(0.2f, 0.2f, 0.2f) * ScaleMatrix(0.5f, 0.5f, 0.5f);
-
         L_shader.SetMatrix("model", L_model);
 
         LCube.Draw(L_shader);
@@ -192,9 +180,7 @@ int main()
         window.Quit();
     }
     
-    FreeTexture(t1);
-    FreeTexture(t2);
-    FreeTexture(n);
+    scp173.Free();
     delete renderer;
     return 0;
 }

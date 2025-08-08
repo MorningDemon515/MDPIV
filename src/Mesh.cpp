@@ -1,9 +1,11 @@
 #include "Mesh.h"
 
 #include <glad/glad.h>
+#include "stb_image.h"
 
-Mesh::Mesh(MD_Math::VECTOR3 pos[], 
-            MD_Math::VECTOR2 texc[], 
+Mesh::Mesh(std::vector<MD_Math::VECTOR3> pos, 
+           std::vector<MD_Math::VECTOR2> texc, 
+           std::vector<Texture> texs,
             std::vector<unsigned int> indices)
 {
     Vertex temp = {
@@ -16,7 +18,7 @@ Mesh::Mesh(MD_Math::VECTOR3 pos[],
     MD_Math::VECTOR3 normal(0.0f, 0.0f, 0.0f);
     
     int j = 0, c = 0;
-    for(int i = 0; i < 24; i++)
+    for(int i = 0; i < pos.size(); i++)
     {
         if(i % 4 == 0 && i != 0)
         {
@@ -36,6 +38,9 @@ Mesh::Mesh(MD_Math::VECTOR3 pos[],
     }
 
     ComputeTangents(vertices, indices);
+
+    textures = texs;
+    texCount = texs.size();
 
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -62,19 +67,105 @@ Mesh::Mesh(MD_Math::VECTOR3 pos[],
 
     glEnableVertexAttribArray(4);
     glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitangent));
+
+    ind = indices.size();
+}
+
+Mesh::Mesh(std::vector<MD_Math::VECTOR3> pos, 
+        std::vector<MD_Math::VECTOR2> texc,
+        std::vector<MD_Math::VECTOR3> normal, 
+        std::vector<MD_Math::VECTOR3> tangent, 
+        std::vector<MD_Math::VECTOR3> bitangent, 
+        std::vector<Texture> texs,
+        std::vector<unsigned int> indices)
+{
+    Vertex temp = {
+        MD_Math::VECTOR3(0.0f, 0.0f, 0.0f), 
+        MD_Math::VECTOR3(0.0f, 0.0f, 0.0f), 
+        MD_Math::VECTOR2(0.0f, 0.0f), 
+        MD_Math::VECTOR3(0.0f, 0.0f, 0.0f), 
+        MD_Math::VECTOR3(0.0f, 0.0f, 0.0f)};
+    
+    for(int i = 0; i < pos.size(); i++)
+    {
+        temp.Position = pos[i];
+        temp.Normals = normal[i];
+        temp.TexCoords = texc[i];
+        temp.Tangent = tangent[i];
+        temp.Bitangent = bitangent[i];
+        vertices.push_back(temp);
+    }
+    
+    textures = texs;
+    texCount = texs.size();
+    
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
+
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normals));
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+    glEnableVertexAttribArray(2);
+
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tangent));
+
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitangent));
+
+    ind = indices.size();
 }
 
 Mesh::~Mesh()
 {
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
-    glDeleteVertexArrays(1, &VAO);
+   
+}
+
+void Mesh::Free()
+{
+   glDeleteBuffers(1, &VBO);
+   glDeleteBuffers(1, &EBO);
+   glDeleteVertexArrays(1, &VAO);
+
+   for(unsigned int i = 0; i < textures.size(); i++)
+   {
+        glDeleteTextures(1, &textures[i].id);
+   }
 }
 
 void Mesh::Draw(Shader& shader)
 {
+    unsigned int diffuseNr = 1;
+    unsigned int specularNr = 1;
+    for(unsigned int i = 0; i < textures.size(); i++)
+    {
+        glActiveTexture(GL_TEXTURE0 + i);
+        std::string number;
+        std::string name = textures[i].type;
+        if(name == "texture_diffuse")
+            number = std::to_string(diffuseNr++);
+        else if(name == "texture_specular")
+            number = std::to_string(specularNr++);
+
+        shader.SetInt((name + number).c_str(), i);
+        glBindTexture(GL_TEXTURE_2D, textures[i].id);
+    }
+    glActiveTexture(GL_TEXTURE0);
+
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, ind, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
 
