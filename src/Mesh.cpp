@@ -71,11 +71,7 @@ Mesh::Mesh(std::vector<MD_Math::VECTOR3> pos,
     ind = indices.size();
 }
 
-Mesh::Mesh(std::vector<MD_Math::VECTOR3> pos, 
-        std::vector<MD_Math::VECTOR2> texc,
-        std::vector<MD_Math::VECTOR3> normal, 
-        std::vector<MD_Math::VECTOR3> tangent, 
-        std::vector<MD_Math::VECTOR3> bitangent, 
+Mesh::Mesh(std::vector<Vertex> vers,
         std::vector<Texture> texs,
         std::vector<unsigned int> indices)
 {
@@ -86,13 +82,13 @@ Mesh::Mesh(std::vector<MD_Math::VECTOR3> pos,
         MD_Math::VECTOR3(0.0f, 0.0f, 0.0f), 
         MD_Math::VECTOR3(0.0f, 0.0f, 0.0f)};
     
-    for(int i = 0; i < pos.size(); i++)
+    for(int i = 0; i < vers.size(); i++)
     {
-        temp.Position = pos[i];
-        temp.Normals = normal[i];
-        temp.TexCoords = texc[i];
-        temp.Tangent = tangent[i];
-        temp.Bitangent = bitangent[i];
+        temp.Position = vers[i].Position;
+        temp.Normals = vers[i].Normals;
+        temp.TexCoords = vers[i].TexCoords;
+        temp.Tangent = vers[i].Tangent;
+        temp.Bitangent = vers[i].Bitangent;
         vertices.push_back(temp);
     }
     

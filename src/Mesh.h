@@ -40,11 +40,8 @@ public:
         std::vector<Texture> texs,
         std::vector<unsigned int> indices);
 
-    Mesh(std::vector<MD_Math::VECTOR3> pos, 
-        std::vector<MD_Math::VECTOR2> texc,
-        std::vector<MD_Math::VECTOR3> normal, 
-        std::vector<MD_Math::VECTOR3> tangent, 
-        std::vector<MD_Math::VECTOR3> bitangent, 
+    Mesh(
+        std::vector<Vertex> vers,
         std::vector<Texture> texs,
         std::vector<unsigned int> indices);    
 

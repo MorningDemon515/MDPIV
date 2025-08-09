@@ -8,7 +8,7 @@ in vec3 FragPos;
 in vec2 TexCoords;
 
 uniform sampler2D texture_diffuse0;
-//uniform sampler2D texture_normal0;  
+uniform sampler2D texture_normal0;  
 
 uniform samplerCube irradianceMap;
 uniform samplerCube prefilterMap;
@@ -38,9 +38,9 @@ void main()
     float roughness = 0.9f;
     float ao = 1.0f;
 
-    vec3 N = normalize(Normal);
-    //vec3 N = texture(texture_normal0, TexCoords).xyz * 2.0 - 1.0;
-   // N = normalize(TBN * N);
+    //vec3 N = normalize(Normal);
+    vec3 N = texture(texture_normal0, TexCoords).xyz * 2.0 - 1.0;
+    N = normalize(TBN * N);
     vec3 V = normalize(ViewPos - FragPos);
     vec3 R = reflect(-V, N);   
 

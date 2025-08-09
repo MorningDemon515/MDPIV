@@ -93,7 +93,9 @@ int main()
         VECTOR3(100.0f, 100.0f, 100.0f)
     };
 
-    Model scp173 = Model("resources/model/scp-173.obj");
+    Model scp173 = Model("resources/model/dancing_vampire.dae");
+
+    unsigned int normal = TextureFromFile("resources/model/textures/Vampire_normal.png");
 
     shader.Link();
     shader.Use();
@@ -101,11 +103,12 @@ int main()
     shader.SetInt("irradianceMap", scp173.texCount);
     shader.SetInt("prefilterMap", scp173.texCount + 1);
     shader.SetInt("brdfLUT", scp173.texCount + 2);
+    shader.SetInt("texture_normal0", scp173.texCount + 3);
 
     L_shader.Link();
 
     float speed = 3.0f;
-    MATRIX model = ScaleMatrix(0.1f, 0.1f, 0.1f);
+    MATRIX model = ScaleMatrix(0.01f, 0.01f, 0.01f);
     MATRIX NM = NormalMatrix(model);
 
     MATRIX L_model = TranslationMatrix(pbr_light.Position.x, pbr_light.Position.y, pbr_light.Position.z) * 
@@ -156,6 +159,8 @@ int main()
         SetCubeTexture(ibl.prefilterMap, GL_TEXTURE0 + scp173.texCount + 1);
         SetTexture(ibl.brdfLUTTexture, GL_TEXTURE0 + scp173.texCount + 2);
 
+        SetTexture(normal, GL_TEXTURE0 + scp173.texCount + 3);
+
         shader.SetMatrix("model", model);
 
         scp173.Draw(shader);
@@ -181,6 +186,7 @@ int main()
     }
     
     scp173.Free();
+    FreeTexture(normal);
     delete renderer;
     return 0;
 }

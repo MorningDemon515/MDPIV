@@ -1,6 +1,8 @@
 #include "Model.h"
 #include "Texture.h"
 
+#include <assert.h>
+
 using namespace MD_Math;
 
 void Model::LoadModel(std::string path)
@@ -35,52 +37,45 @@ void Model::processNode(aiNode *node, const aiScene *scene)
 
 Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 {
-    std::vector<MD_Math::VECTOR3> pos;
-    std::vector<MD_Math::VECTOR2> texc;
-    std::vector<MD_Math::VECTOR3> normal; 
-    std::vector<MD_Math::VECTOR3> tangent; 
-    std::vector<MD_Math::VECTOR3> bitangent;
+    std::vector<Vertex> vers;
 
-    MD_Math::VECTOR3 temp(0.0f, 0.0f, 0.0f);
-    MD_Math::VECTOR3 temp_n(0.0f, 0.0f, 0.0f);
-    MD_Math::VECTOR3 temp_t(0.0f, 0.0f, 0.0f);
-    MD_Math::VECTOR3 temp_bt(0.0f, 0.0f, 0.0f);
-
-    MD_Math::VECTOR2 temp2(0.0f, 0.0f);
+    Vertex temp = {
+        VECTOR3(0.0f, 0.0f, 0.0f),
+        VECTOR3(0.0f, 0.0f, 0.0f),
+        VECTOR2(0.0f, 0.0f),
+        VECTOR3(0.0f, 0.0f, 0.0f),
+        VECTOR3(0.0f, 0.0f, 0.0f)
+    };
 
     for(unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
+        temp.Position.x = mesh->mVertices[i].x;
+        temp.Position.y = mesh->mVertices[i].y;
+        temp.Position.z = mesh->mVertices[i].z;
 
-        temp.x = mesh->mVertices[i].x;
-        temp.y = mesh->mVertices[i].y;
-        temp.z = mesh->mVertices[i].z;
-        pos.push_back(temp);
+        temp.Normals.x = mesh->mNormals[i].x;
+        temp.Normals.y = mesh->mNormals[i].y;
+        temp.Normals.z = mesh->mNormals[i].z;
 
-        temp_n.x = mesh->mNormals[i].x;
-        temp_n.y = mesh->mNormals[i].y;
-        temp_n.z = mesh->mNormals[i].z;
-        normal.push_back(temp_n);
+        temp.Tangent.x = mesh->mTangents[i].x;
+        temp.Tangent.y = mesh->mTangents[i].y;
+        temp.Tangent.z = mesh->mTangents[i].z;
 
-        temp_t.x = mesh->mTangents[i].x;
-        temp_t.y = mesh->mTangents[i].y;
-        temp_t.z = mesh->mTangents[i].z;
-        tangent.push_back(temp_t);
-
-        temp_bt.x = mesh->mBitangents[i].x;
-        temp_bt.y = mesh->mBitangents[i].y;
-        temp_bt.z = mesh->mBitangents[i].z;
-        bitangent.push_back(temp_bt);
+        temp.Bitangent.x = mesh->mBitangents[i].x;
+        temp.Bitangent.y = mesh->mBitangents[i].y;
+        temp.Bitangent.z = mesh->mBitangents[i].z;
 
         if(mesh->mTextureCoords[0]) 
         {
-            temp2.x = mesh->mTextureCoords[0][i].x; 
-            temp2.y = mesh->mTextureCoords[0][i].y;
-            texc.push_back(temp2);
+            temp.TexCoords.x = mesh->mTextureCoords[0][i].x; 
+            temp.TexCoords.y = mesh->mTextureCoords[0][i].y;
         }
         else
         {
-            texc.push_back(MD_Math::VECTOR2(0.0f, 0.0f));
+            temp.TexCoords = MD_Math::VECTOR2(0.0f, 0.0f);
         }
+
+        vers.push_back(temp);
     }
 
     std::vector<unsigned int> indices;
@@ -104,7 +99,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
    
     texCount = textures.size();
 
-   return Mesh(pos, texc, normal, tangent, bitangent, textures, indices);
+   return Mesh(vers, textures, indices);
 }
 
 std::vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName)

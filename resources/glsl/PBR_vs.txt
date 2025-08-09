@@ -19,13 +19,15 @@ out mat3 TBN;
 
 void main()
 {
-    gl_Position = projection * view * model * vec4(aPos, 1.0f);
+    gl_Position = projection * view * model * vec4(aPos, 1.0);
+    FragPos = vec3(model * vec4(aPos, 1.0));
+
     Normal = mat3(nm) * aNormal;
-    FragPos = vec3(model * vec4(aPos, 1.0f));
     TexCoords = aTexCoords;
 
     vec3 T = normalize( mat3(nm) * aTangent);
     vec3 B = normalize( mat3(nm) * aBitangent);
     vec3 N = normalize( mat3(nm) * aNormal);
     TBN = mat3(T, B, N);
+
 }
