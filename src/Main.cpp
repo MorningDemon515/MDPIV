@@ -131,7 +131,10 @@ int main()
     Cube LCube = Cube();
 
     glViewport(0, 0, window.width, window.height);
-
+    
+    int mode = 1;
+    
+    scp173Anim.SetAnimationRange(1.0f, 30.0f);
     while(window.Run())
     {
         double currentTime = glfwGetTime();
@@ -139,9 +142,14 @@ int main()
         lastTime = currentTime;
 
         Input_Update(window.window);
+        
+        scp173Anim.SetAnimation(mode, 1.0f);
 
         if(Input_IsKeyReleased(GLFW_KEY_ESCAPE))
             window.run = false;        
+
+        if(Input_IsKeyReleased(GLFW_KEY_SPACE))
+            mode = 0;         
 
         camera.Move(speed * deltaTime, 50.0f * deltaTime);                
         

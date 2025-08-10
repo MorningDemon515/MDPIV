@@ -25,6 +25,13 @@ private:
     unsigned int FindPosition(float animationTime, const aiNodeAnim* nodeAnim);
     unsigned int FindRotation(float animationTime, const aiNodeAnim* nodeAnim);
     unsigned int FindScaling(float animationTime, const aiNodeAnim* nodeAnim);
+    
+    float speed = 1.0f;
+    int modes;
+
+    float startFrame = 0.0f;
+    float endFrame = 0.0f;    
+    bool customRange = false;   
 
 public:
     Animator(){};
@@ -37,9 +44,16 @@ public:
 
     };
     ~Animator(){};
-
+    
+    void SetAnimation(int mode, float Speed);
     void UpdateAnimation(float time);
     void SetShader(Shader& shader);
+
+    void SetAnimationRange(float start, float end) {
+        startFrame = start;
+        endFrame = end;
+        customRange = true;
+    }
 };
 
 #endif

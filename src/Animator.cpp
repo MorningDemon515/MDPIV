@@ -3,15 +3,69 @@
 
 using namespace MD_Math;
 
+void Animator::SetAnimation(int mode , float Speed)
+{
+    this->speed = Speed;
+    this->modes = mode;
+}
+
 void Animator::UpdateAnimation(float time)
 {
     if(scene->mNumAnimations == 0) return;
+
+    static float pausedAnimationTime = 0.0f;
+    
+    if(modes == 0) 
+    {
+        animationTime = pausedAnimationTime;
+    }
+    else 
+    {
+        float ticksPerSecond = scene->mAnimations[0]->mTicksPerSecond != 0 ? 
+                                scene->mAnimations[0]->mTicksPerSecond : 25.0f;
+        float timeInTicks = speed * time * ticksPerSecond;
         
-    float ticksPerSecond = scene->mAnimations[0]->mTicksPerSecond != 0 ? 
-                            scene->mAnimations[0]->mTicksPerSecond : 25.0f;
-    float timeInTicks = time * ticksPerSecond;
-    animationTime = fmod(timeInTicks, (float)scene->mAnimations[0]->mDuration);
+        float duration = (float)scene->mAnimations[0]->mDuration;
         
+        float actualStart = customRange ? startFrame : 0.0f;
+        float actualEnd = customRange ? endFrame : duration;
+        float actualDuration = actualEnd - actualStart;
+        
+        if (actualDuration <= 0) {
+            animationTime = actualStart;
+            pausedAnimationTime = animationTime;
+            return;
+        }
+        
+        float cycleDuration = 2.0f * actualDuration; 
+        float modTime = MD_Math::Mod(timeInTicks, cycleDuration);
+        
+        switch (modes)
+        {
+        case 1: 
+            animationTime = actualStart + MD_Math::Mod(timeInTicks, actualDuration);
+            break;
+
+        case 2: 
+            if (modTime < actualDuration) {
+                animationTime = actualStart + modTime;
+            } else {
+                animationTime = actualStart + 2.0f * actualDuration - modTime;
+            }
+            break;
+
+        case 3: 
+            animationTime = MD_Math::Min(actualStart + timeInTicks, actualEnd);
+            break;    
+        
+        default:
+            animationTime = actualStart + MD_Math::Mod(timeInTicks, actualDuration);
+            break;
+        }
+        
+        pausedAnimationTime = animationTime;
+    }
+    
     globalInverseTransform = MatrixTranspose(InvMatrix(ConvertMatrix(scene->mRootNode->mTransformation)));
     ReadNodeHierarchy(animationTime, scene->mRootNode, IdentityMatrix());
 }

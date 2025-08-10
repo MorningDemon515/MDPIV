@@ -41,13 +41,22 @@ void main()
 
     gl_Position = projection * view * model * pos;
     FragPos = vec3(model * pos);
-
-    Normal = mat3(nm) * aNormal;
     TexCoords = aTexCoords;
+    
+    mat3 boneRotation = mat3(boneTransform); 
+    vec3 skinnedNormal = normalize(boneRotation * aNormal);
+    vec3 skinnedTangent = normalize(boneRotation * aTangent);
+    vec3 skinnedBitangent = normalize(boneRotation * aBitangent);
 
-    vec3 T = normalize( mat3(nm) * aTangent);
-    vec3 B = normalize( mat3(nm) * aBitangent);
-    vec3 N = normalize( mat3(nm) * aNormal);
+    Normal = mat3(nm) * skinnedNormal;
+
+    vec3 T = normalize( mat3(nm) * skinnedTangent);
+    vec3 N = normalize( mat3(nm) * skinnedNormal);
+    vec3 B = normalize( mat3(nm) * skinnedBitangent);
+    
+    //T = normalize(T - dot(T, N) * N); // Gram-Schmidt
+    //vec3 B = cross(N, T);
+
     TBN = mat3(T, B, N);
 
 }
