@@ -3,6 +3,8 @@
 
 #include <assert.h>
 
+#include "AssimpConvert.h"
+
 using namespace MD_Math;
 
 void Model::LoadModel(std::string path)
@@ -44,7 +46,9 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
         VECTOR3(0.0f, 0.0f, 0.0f),
         VECTOR2(0.0f, 0.0f),
         VECTOR3(0.0f, 0.0f, 0.0f),
-        VECTOR3(0.0f, 0.0f, 0.0f)
+        VECTOR3(0.0f, 0.0f, 0.0f),
+        IVECTOR4(0, 0, 0, 0),
+        VECTOR4(0.0f, 0.0f, 0.0f, 0.0f)
     };
 
     for(unsigned int i = 0; i < mesh->mNumVertices; i++)
@@ -75,6 +79,9 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
             temp.TexCoords = MD_Math::VECTOR2(0.0f, 0.0f);
         }
 
+        temp.BoneIDs = IVECTOR4(-1, -1, -1, -1);
+        temp.Weights = VECTOR4(0.0f, 0.0f, 0.0f, 0.0f);
+
         vers.push_back(temp);
     }
 
@@ -98,6 +105,49 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
     textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
    
     texCount = textures.size();
+
+    for(unsigned int i = 0; i < mesh->mNumBones; i++) {
+            aiBone* bone = mesh->mBones[i];
+            std::string boneName(bone->mName.data);
+            unsigned int boneID = 0;
+            
+            if(boneMapping.find(boneName) == boneMapping.end()) {
+                boneID = numBones;
+                numBones++;
+                BoneInfo info;
+                info.Offset = ConvertMatrix(bone->mOffsetMatrix);
+                boneInfoList.push_back(info);
+                boneMapping[boneName] = boneID;
+            } else {
+                boneID = boneMapping[boneName];
+            }
+            
+            for(unsigned int j = 0; j < bone->mNumWeights; j++) {
+                aiVertexWeight weight = bone->mWeights[j];
+                unsigned int vertexID = weight.mVertexId;
+                float w = weight.mWeight;
+                
+                for(int k = 0; k < 4; k++) {
+                    if(vers[vertexID].BoneIDs.x < 0) {
+                        vers[vertexID].BoneIDs.x = boneID;
+                        vers[vertexID].Weights.x = w;
+                        break;
+                    } else if(vers[vertexID].BoneIDs.y < 0) {
+                        vers[vertexID].BoneIDs.y = boneID;
+                        vers[vertexID].Weights.y = w;
+                        break;
+                    } else if(vers[vertexID].BoneIDs.z < 0) {
+                        vers[vertexID].BoneIDs.z = boneID;
+                        vers[vertexID].Weights.z = w;
+                        break;
+                    } else if(vers[vertexID].BoneIDs.w < 0) {
+                        vers[vertexID].BoneIDs.w = boneID;
+                        vers[vertexID].Weights.w = w;
+                        break;
+                    }
+                }
+            }
+        }
 
    return Mesh(vers, textures, indices);
 }

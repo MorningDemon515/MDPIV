@@ -279,6 +279,12 @@ namespace MD_Math{
     
     QUATERNION Mix(const QUATERNION& q1, const QUATERNION& q2, float a);
 
+    typedef struct IVECTOR4 { // Just For Assimp
+    int x, y, z, w;
+    IVECTOR4() : x(0), y(0), z(0), w(0) {}
+    IVECTOR4(int a, int b, int c, int d) : x(a), y(b), z(c), w(d) {}
+    } IVECTOR4;
+
 
 // About Vector--------------------------------------------------------------------------------
 

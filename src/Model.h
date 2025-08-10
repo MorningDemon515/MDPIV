@@ -11,6 +11,11 @@
 #include <map>
 #include <vector>
 
+struct BoneInfo {
+    MD_Math::MATRIX Offset;
+    MD_Math::MATRIX FinalTransformation;
+};
+
 class Model
 {
 private:
@@ -22,13 +27,18 @@ private:
     std::vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName);
     
     Assimp::Importer import;
-    const aiScene *scene;
     aiMesh *mesh;
     aiFace face;
     aiMaterial* material;
 
     std::string directory;
 public:
+    std::map<std::string, unsigned int> boneMapping;
+    std::vector<BoneInfo> boneInfoList;
+    unsigned int numBones = 0;
+
+    const aiScene *scene;
+
     Model(){};
     Model(std::string path)
     {

@@ -13,7 +13,9 @@ Mesh::Mesh(std::vector<MD_Math::VECTOR3> pos,
         MD_Math::VECTOR3(0.0f, 0.0f, 0.0f), 
         MD_Math::VECTOR2(0.0f, 0.0f), 
         MD_Math::VECTOR3(0.0f, 0.0f, 0.0f), 
-        MD_Math::VECTOR3(0.0f, 0.0f, 0.0f)};
+        MD_Math::VECTOR3(0.0f, 0.0f, 0.0f),
+        MD_Math::IVECTOR4(0, 0, 0, 0),
+        MD_Math::VECTOR4(0.0f, 0.0f, 0.0f, 0.0f)};
 
     MD_Math::VECTOR3 normal(0.0f, 0.0f, 0.0f);
     
@@ -68,6 +70,12 @@ Mesh::Mesh(std::vector<MD_Math::VECTOR3> pos,
     glEnableVertexAttribArray(4);
     glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitangent));
 
+    glEnableVertexAttribArray(5);
+    glVertexAttribIPointer(5, 4, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, BoneIDs));
+        
+    glEnableVertexAttribArray(6);
+    glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Weights));
+
     ind = indices.size();
 }
 
@@ -80,7 +88,9 @@ Mesh::Mesh(std::vector<Vertex> vers,
         MD_Math::VECTOR3(0.0f, 0.0f, 0.0f), 
         MD_Math::VECTOR2(0.0f, 0.0f), 
         MD_Math::VECTOR3(0.0f, 0.0f, 0.0f), 
-        MD_Math::VECTOR3(0.0f, 0.0f, 0.0f)};
+        MD_Math::VECTOR3(0.0f, 0.0f, 0.0f),
+        MD_Math::IVECTOR4(0, 0, 0, 0),
+        MD_Math::VECTOR4(0.0f, 0.0f, 0.0f, 0.0f)};
     
     for(int i = 0; i < vers.size(); i++)
     {
@@ -89,6 +99,8 @@ Mesh::Mesh(std::vector<Vertex> vers,
         temp.TexCoords = vers[i].TexCoords;
         temp.Tangent = vers[i].Tangent;
         temp.Bitangent = vers[i].Bitangent;
+        temp.BoneIDs = vers[i].BoneIDs;
+        temp.Weights = vers[i].Weights;
         vertices.push_back(temp);
     }
     
@@ -120,6 +132,12 @@ Mesh::Mesh(std::vector<Vertex> vers,
 
     glEnableVertexAttribArray(4);
     glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitangent));
+
+    glEnableVertexAttribArray(5);
+    glVertexAttribIPointer(5, 4, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, BoneIDs));
+        
+    glEnableVertexAttribArray(6);
+    glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Weights));
 
     ind = indices.size();
 }

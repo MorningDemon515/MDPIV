@@ -14,6 +14,8 @@ struct Vertex
     MD_Math::VECTOR2 TexCoords;
     MD_Math::VECTOR3 Tangent;   
     MD_Math::VECTOR3 Bitangent; 
+    MD_Math::IVECTOR4 BoneIDs;       
+    MD_Math::VECTOR4 Weights;    
 };
 
 struct Texture {

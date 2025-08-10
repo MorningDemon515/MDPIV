@@ -1,3 +1,4 @@
+
 #include "Window.h"
 #include "OGL/Renderer_GL.h"
 #include "Shader.h"
@@ -15,7 +16,7 @@
 
 #include "IBL.h"
 #include "SkyBox.h"
-#include "Model.h"
+#include "Animator.h"
 
 using namespace MD_Math;
 
@@ -93,9 +94,10 @@ int main()
         VECTOR3(100.0f, 100.0f, 100.0f)
     };
 
-    Model scp173 = Model("resources/model/dancing_vampire.dae");
+    Model scp173 = Model("resources/model/scp173.fbx");
+    Animator scp173Anim = Animator(&scp173);
 
-    unsigned int normal = TextureFromFile("resources/model/textures/Vampire_normal.png");
+    unsigned int normal = TextureFromFile("resources/model/173_Norm.jpg");
 
     shader.Link();
     shader.Use();
@@ -108,7 +110,7 @@ int main()
     L_shader.Link();
 
     float speed = 3.0f;
-    MATRIX model = ScaleMatrix(0.01f, 0.01f, 0.01f);
+    MATRIX model = ScaleMatrix(0.001f, 0.001f, 0.001f);
     MATRIX NM = NormalMatrix(model);
 
     MATRIX L_model = TranslationMatrix(pbr_light.Position.x, pbr_light.Position.y, pbr_light.Position.z) * 
@@ -142,6 +144,8 @@ int main()
             window.run = false;        
 
         camera.Move(speed * deltaTime, 50.0f * deltaTime);                
+        
+        scp173Anim.UpdateAnimation(currentTime);
 
         renderer->Clear(0, 0, 0);
 
@@ -154,6 +158,8 @@ int main()
 
         shader.SetVec3("light.Position", pbr_light.Position);
         shader.SetVec3("light.Color", pbr_light.Color);
+
+        scp173Anim.SetShader(shader);
 
         SetCubeTexture(ibl.irradianceMap, GL_TEXTURE0 + scp173.texCount);
         SetCubeTexture(ibl.prefilterMap, GL_TEXTURE0 + scp173.texCount + 1);
