@@ -1749,6 +1749,32 @@ namespace MD_Math{
         return MatrixTranspose(InvMatrix(model));
     }
 
+    MATRIX BillboardMatrix(const VECTOR3& position, const MATRIX& view) {
+    
+    MATRIX translation = {
+        1.0f, 0.0f, 0.0f, position.x,
+        0.0f, 1.0f, 0.0f, position.y,
+        0.0f, 0.0f, 1.0f, position.z,
+        0.0f, 0.0f, 0.0f, 1.0f
+    };
+    
+    MATRIX rotation = {
+        view._11, view._12, view._13, 0.0f,
+        view._21, view._22, view._23, 0.0f,
+        view._31, view._32, view._33, 0.0f,
+        0.0f,    0.0f,    0.0f,    1.0f
+    };
+    
+    MATRIX invRotation = {
+        rotation._11, rotation._21, rotation._31, 0.0f,
+        rotation._12, rotation._22, rotation._32, 0.0f,
+        rotation._13, rotation._23, rotation._33, 0.0f,
+        0.0f,        0.0f,        0.0f,        1.0f
+    };
+    
+    return translation * invRotation;
+}
+
     VECTOR2 VECTOR2::operator - ()
     {
 		VECTOR2 temp(

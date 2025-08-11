@@ -18,6 +18,8 @@
 #include "SkyBox.h"
 #include "Animator.h"
 
+#include "Font.h"
+
 using namespace MD_Math;
 
 std::string title = "MDPIV";
@@ -122,7 +124,7 @@ int main()
         0.1f,
         100.0f
     );
-    
+
     static double lastTime = glfwGetTime();
 
     system("color a");
@@ -135,6 +137,18 @@ int main()
     int mode = 1;
     
     scp173Anim.SetAnimationRange(1.0f, 30.0f);
+
+    Shader font_shader = Shader("resources/glsl/Font_vs.txt", "resources/glsl/Font_fs.txt");
+    font_shader.Link();
+    font_shader.Use();
+    font_shader.SetInt("text", 0);
+    font_shader.SetVec3("textColor", VECTOR3(1.0f, 0.0f, 0.0f));
+    font_shader.SetMatrix("projection", projection);
+
+    Font text1 = Font("C:/Windows/Fonts/simfang.ttf", 12);
+
+    MATRIX font_model = IdentityMatrix();
+
     while(window.Run())
     {
         double currentTime = glfwGetTime();
@@ -178,22 +192,32 @@ int main()
         shader.SetMatrix("model", model);
 
         scp173.Draw(shader);
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
         L_shader.Use();
         L_shader.SetMatrix("view", camera.Matrix());
         L_shader.SetMatrix("projection", projection);
                                 
         L_shader.SetMatrix("model", L_model);
-
+         
         LCube.Draw(L_shader);
+        
+////////////////////////////////////////////////////////////////////////////////////////////////////////        
+        font_model = BillboardMatrix(VECTOR3(0.0f, 1.0f, -3.0f), camera.Matrix());
+        font_shader.Use();
+        font_shader.SetMatrix("model", font_model);
+        font_shader.SetMatrix("view", camera.Matrix());
+        
+        text1.Draw("Hello, OpenGL", 0.0f, 0.0f, -1.0f , 0.01f);
+////////////////////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////////
         FinalSkyBoxShader.Use();
         FinalSkyBoxShader.SetMatrix("view", camera.Matrix());
         FinalSkyBoxShader.SetMatrix("projection", projection);
+    
         ibl.Draw(FinalSkyBox, FinalSkyBoxShader);
-        
+
+//////////////////////////////////////////////////////////////////////////////
+
         renderer->Present(window.window);
         
         window.Quit();

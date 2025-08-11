@@ -16,6 +16,7 @@ add_executable(MDPIV
         src/IBL.cpp
         src/Model.cpp
         src/Animator.cpp
+        src/Font.cpp
         src/OGL/Renderer_GL.cpp
         src/D3D9/Renderer_D3D9.cpp
         src/Main.cpp)

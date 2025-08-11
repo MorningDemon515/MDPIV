@@ -285,6 +285,12 @@ namespace MD_Math{
     IVECTOR4(int a, int b, int c, int d) : x(a), y(b), z(c), w(d) {}
     } IVECTOR4;
 
+    typedef struct IVECTOR2 { // Just For FreeType
+    int x, y;
+    IVECTOR2() : x(0), y(0){}
+    IVECTOR2(int a, int b) : x(a), y(b){}
+    } IVECTOR2;
+
 
 // About Vector--------------------------------------------------------------------------------
 
@@ -360,6 +366,7 @@ namespace MD_Math{
     MATRIX ShadowMatrix(VECTOR4 Light, PLANE p);	
 
     MATRIX NormalMatrix(MATRIX model);
+    MATRIX BillboardMatrix(const VECTOR3& position, const MATRIX& view);
 }
 
 #endif
