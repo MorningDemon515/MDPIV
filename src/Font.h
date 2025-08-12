@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <map>
+#include <vector>
 
 struct Character {
     unsigned int TextureID;
@@ -21,13 +22,20 @@ class Font
 {
 public:
     Font(){};
-    Font(const char* fontpath, int size);
+    Font(std::string text, const char* fontpath, int size);
     ~Font();
 
-    void Draw(std::string text, float x, float y, float z, float scale);
+    void Draw(float x, float y, float z, float scale);
 private:
-    std::map<char, Character> Characters;  
+    std::map<unsigned int, Character> Characters; 
     unsigned int textVAO, textVBO;
+
+//From https://github.com/Saalvage/Blitz3D/commit/232d253f5b3bf84fcada619e2666d6004d3fe606
+    int measureCodepoint(char chr);
+    int decodeCharacter(const char* buf, int index);
+
+    std::vector<unsigned int> codepoints;
+    std::string textt;
 };
 
 #endif

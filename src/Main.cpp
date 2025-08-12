@@ -145,7 +145,7 @@ int main()
     font_shader.SetVec3("textColor", VECTOR3(1.0f, 0.0f, 0.0f));
     font_shader.SetMatrix("projection", projection);
 
-    Font text1 = Font("C:/Windows/Fonts/simfang.ttf", 12);
+    Font text1 = Font("你好世界!", "C:/Windows/Fonts/simfang.ttf", 12);
 
     MATRIX font_model = IdentityMatrix();
 
@@ -202,12 +202,12 @@ int main()
         LCube.Draw(L_shader);
         
 ////////////////////////////////////////////////////////////////////////////////////////////////////////        
-        font_model = BillboardMatrix(VECTOR3(0.0f, 1.0f, -3.0f), camera.Matrix());
+        //font_model = BillboardMatrix(VECTOR3(0.0f, 1.0f, -3.0f), camera.Matrix());
         font_shader.Use();
         font_shader.SetMatrix("model", font_model);
         font_shader.SetMatrix("view", camera.Matrix());
         
-        text1.Draw("Hello, OpenGL", 0.0f, 0.0f, -1.0f , 0.01f);
+        text1.Draw(0.0f, 0.0f, -1.0f , 0.01f);
 ////////////////////////////////////////////////////////////////////////////////////////
 
         FinalSkyBoxShader.Use();
