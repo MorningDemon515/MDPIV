@@ -77,4 +77,28 @@ public:
     void Draw(Shader& shader);
 };
 
+class Sphere
+{
+private:
+    unsigned int VAO, VBO, EBO;
+    struct Vertex {
+        MD_Math::VECTOR3 position;
+        MD_Math::VECTOR3 normal;
+        MD_Math::VECTOR2 texCoords;
+    };
+
+    std::vector<Vertex> vertices;
+    std::vector<unsigned int> indices;
+
+    const float radius = 1.0f;
+    const int sectors = 36;
+    const int stacks = 18;
+
+public:
+    Sphere();
+    ~Sphere();
+
+    void Draw(Shader& shader);
+};
+
 #endif

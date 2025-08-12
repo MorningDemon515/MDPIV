@@ -327,3 +327,88 @@ void Quad::Draw(Shader& shader)
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glBindVertexArray(0);
 }
+
+Sphere::Sphere()
+{
+    for (int i = 0; i <= stacks; ++i) {
+        float stackAngle = MD_MATH_PI / 2 - i * (MD_MATH_PI / stacks);
+        float xy = radius * MD_Math::Cos(stackAngle);          
+        float z = radius * MD_Math::Sin(stackAngle);           
+
+        for (int j = 0; j <= sectors; ++j) {
+            float sectorAngle = j * (2 * MD_MATH_PI / sectors);
+
+            Vertex vertex = {
+                MD_Math::VECTOR3(0.0f, 0.0f, 0.0f),
+                MD_Math::VECTOR3(0.0f, 0.0f, 0.0f),
+                MD_Math::VECTOR2(0.0f, 0.0f)
+            };
+    
+            vertex.position.x = xy * MD_Math::Cos(sectorAngle);
+            vertex.position.y = xy * MD_Math::Sin(sectorAngle);
+            vertex.position.z = z;
+        
+            vertex.normal = MD_Math::Vector3Normalized(vertex.position);
+        
+            vertex.texCoords.x = (float)j / sectors;
+            vertex.texCoords.y = (float)i / stacks;
+        
+            vertices.push_back(vertex);
+        }
+    }
+
+    for (int i = 0; i < stacks; ++i) {
+        int k1 = i * (sectors + 1);
+        int k2 = k1 + sectors + 1;
+
+        for (int j = 0; j < sectors; ++j, ++k1, ++k2) {
+            if (i != 0) {
+                indices.push_back(k1);
+                indices.push_back(k2);
+                indices.push_back(k1 + 1);
+            }
+    
+            if (i != (stacks - 1)) {
+                indices.push_back(k1 + 1);
+                indices.push_back(k2);
+                indices.push_back(k2 + 1);
+            }
+        }
+    }
+
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+    
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
+    glEnableVertexAttribArray(2);
+
+    glBindVertexArray(0);
+}
+
+Sphere::~Sphere()
+{
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+    glDeleteVertexArrays(1, &VAO);
+}
+
+void Sphere::Draw(Shader& shader)
+{
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+}

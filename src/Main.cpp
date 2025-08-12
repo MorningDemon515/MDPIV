@@ -1,4 +1,134 @@
+#include "Window.h"
+#include "MD_Math.h"
+#include "Camera.h"
+#include "OGL/Renderer_GL.h"
+#include "Model.h"
+#include <iostream>
+#include "stb_image.h"
+#include "Font.h"
 
+using namespace MD_Math;
+
+std::string title = "MDPIV";
+
+int main()
+{
+    Window window = Window(800, 600);
+    window.SetTitle(title.c_str());
+    window.SetICON("resources/icon/MorningDemon.jpg");
+
+    Renderer* renderer = new Renderer_GL();
+    renderer->Init(window.window);
+
+    Input_Init(window.window);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
+    stbi_set_flip_vertically_on_load(true);
+///////////////////////////////////////////////////////////////////////////////////
+    MATRIX projection = PerspectiveMatrixRH(
+        AngularToRadian(45.0f),
+        (float)window.width / (float)window.height,
+        0.1f,
+        100.0f
+    );
+
+    MATRIX projection2 = OrthoMatrixRH(
+        0.0f, (float)window.width , 0.0f, (float)window.height, 0.1f, 100.0f
+    );
+    
+    Model scp173 = Model("resources/model/scp173.fbx");
+    Shader scp173Shader = Shader("resources/glsl/model_vs.txt", "resources/glsl/model_fs.txt");
+    scp173Shader.Link();
+    MATRIX scp173model =  TranslationMatrix(0.0f, 0.0f, 0.0f) * ScaleMatrix(0.001f, 0.001f, 0.001f);
+
+    Quad plane = Quad();
+    Shader planeShader = Shader("resources/glsl/plane_vs.txt", "resources/glsl/plane_fs.txt");
+    planeShader.Link();
+    MATRIX planemodel = TranslationMatrix(0.0f, -1.0f, 0.0f) *
+                        RotationMatrix(AngularToRadian(-90.0f), 'X') *
+                        ScaleMatrix(10.0f, 10.0f, 10.0f);
+    
+    Sphere sphere = Sphere();
+    Shader SphereShader = Shader("resources/glsl/light_vertex.txt", "resources/glsl/light_fragment.txt");
+    SphereShader.Link();
+    float sphere_x = -3.0f;
+    MATRIX Spheremodel = IdentityMatrix();                   
+
+    Camera camera = Camera();
+    camera.SetPos(VECTOR3(0.0f, 0.0f, 13.0f));         
+
+    Font text1 = Font("使用左右键移动球", "C:/Windows/Fonts/simfang.ttf", 16);
+    Shader text1Shader = Shader("resources/glsl/Font_vs.txt", "resources/glsl/Font_fs.txt");
+    text1Shader.Link();
+    text1Shader.Use();
+    text1Shader.SetMatrix("projection", projection);
+    text1Shader.SetMatrix("view", ViewMatrixRH(VECTOR3(0.0f, 0.0f, 3.0f), VECTOR3(0.0f, 0.0f, 0.0f), VECTOR3(0.0f, 1.0f, 0.0f)));
+    text1Shader.SetMatrix("model", IdentityMatrix());
+    text1Shader.SetVec3("textColor", VECTOR3(1.0f, 1.0f, 1.0f));
+    
+///////////////////////////////////////////////////////////////////////////////////
+    system("color a");
+    static double lastTime = glfwGetTime();
+    float speed = 3.0f;
+    glViewport(0, 0, window.width, window.height);  
+    while(window.Run())
+    {
+        double currentTime = glfwGetTime();
+        float deltaTime = (float)(currentTime - lastTime);
+        lastTime = currentTime;
+
+        Input_Update(window.window);
+        
+        if(Input_IsKeyReleased(GLFW_KEY_ESCAPE))
+            window.run = false;        
+
+        //camera.Move(speed * deltaTime, 50.0f * deltaTime);  
+
+        if(Input_IsKeyDown(GLFW_KEY_LEFT))
+            sphere_x -= speed * deltaTime;        
+
+        if(Input_IsKeyDown(GLFW_KEY_RIGHT))
+            sphere_x += speed * deltaTime;                 
+
+        Spheremodel = TranslationMatrix(sphere_x, 0.0f, 0.0f);    
+
+        renderer->Clear(0, 0, 0);
+
+        text1Shader.Use();
+        text1.Draw(-0.5f, 0.8f, 0.0f, 0.003f);
+        
+        planeShader.Use();
+        planeShader.SetMatrix("projection", projection);
+        planeShader.SetMatrix("view", camera.Matrix());
+        planeShader.SetMatrix("model", planemodel);
+        plane.Draw(planeShader);
+        
+        SphereShader.Use();
+        SphereShader.SetMatrix("projection", projection);
+        SphereShader.SetMatrix("view", camera.Matrix());
+        SphereShader.SetMatrix("model", Spheremodel);
+        sphere.Draw(SphereShader);
+
+        scp173Shader.Use();
+        scp173Shader.SetMatrix("projection", projection);
+        scp173Shader.SetMatrix("view", camera.Matrix());
+        scp173Shader.SetMatrix("model", scp173model);
+        scp173.Draw(scp173Shader);
+
+        renderer->Present(window.window);
+        
+        window.Quit();
+    }
+    
+    scp173.Free();
+    delete renderer;
+    return 0;
+}
+
+/*
 #include "Window.h"
 #include "OGL/Renderer_GL.h"
 #include "Shader.h"
@@ -228,3 +358,4 @@ int main()
     delete renderer;
     return 0;
 }
+*/

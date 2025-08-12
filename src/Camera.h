@@ -7,7 +7,7 @@
 class Camera
 {
 private:
-    MD_Math::VECTOR3 cameraPos = {0.0f, 0.0f, 3.0f};
+    MD_Math::VECTOR3 cameraPos = {0.0f, 0.0f, 0.0f};
     MD_Math::VECTOR3 cameraFront = {0.0f, 0.0f, -1.0f};
     MD_Math::VECTOR3 cameraUp = {0.0f, 1.0f, 0.0f};
     
@@ -23,6 +23,11 @@ private:
 public:
     Camera();
     ~Camera();
+
+    void SetPos(MD_Math::VECTOR3 Pos)
+    {
+        this->cameraPos = Pos;
+    }
 
     void Move(float cameraSpeed, float mouseSpeed)
     {
