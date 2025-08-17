@@ -1,3 +1,4 @@
+/*
 #include "Window.h"
 #include "MD_Math.h"
 #include "Camera.h"
@@ -127,8 +128,8 @@ int main()
     delete renderer;
     return 0;
 }
+*/
 
-/*
 #include "Window.h"
 #include "OGL/Renderer_GL.h"
 #include "Shader.h"
@@ -358,4 +359,3 @@ int main()
     delete renderer;
     return 0;
 }
-*/

@@ -17,6 +17,8 @@ Font::Font(std::string text, const char* fontPath, int size)
 
     FT_Set_Pixel_Sizes(face, 0, 48); 
     
+	codepoints.clear();
+	
     size_t textLen = strlen(text.c_str());
     
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
