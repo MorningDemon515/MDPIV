@@ -74,35 +74,41 @@ int main()
 
     unsigned int depthMapFBO;
     const unsigned int SHADOW_WIDTH = 4096, SHADOW_HEIGHT = 4096;
-    unsigned int depthMap;
-    Shader shadowShader = Shader("resources/glsl/shadow_vs.txt", "resources/glsl/shadow_fs.txt");
-    MATRIX lightSpaceMatrix;
+    unsigned int depthCubemap;
 
     glGenFramebuffers(1, &depthMapFBO);
-    glGenTextures(1, &depthMap);
-    glBindTexture(GL_TEXTURE_2D, depthMap);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 
-                 SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
-    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+    glGenTextures(1, &depthCubemap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+    for (unsigned int i = 0; i < 6; ++i)
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, 
+                     SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemap, 0);
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    shadowShader.Link();
+    // 使用新的点阴影着色器
+Shader pointShadowShader = Shader("resources/glsl/shadow_vs.txt", 
+                                 "resources/glsl/shadow_fs.txt",
+                                 "resources/glsl/shadow_gs.txt");
+pointShadowShader.Link();
+
     
 ///////////////////////////////////////////////////////////////////////////////////
     system("color a");
     static double lastTime = glfwGetTime();
     float speed = 3.0f;
     glViewport(0, 0, window.width, window.height);  
+
+    float far_plane = 25.0f;
     while(window.Run())
     {
         double currentTime = glfwGetTime();
@@ -120,20 +126,37 @@ int main()
         glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
         glClear(GL_DEPTH_BUFFER_BIT);
 
-        MATRIX lightProjection = OrthoMatrixRH(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 20.0f);
-        MATRIX lightView = ViewMatrixRH(LightPos, VECTOR3(0.0f, 0.0f, 0.0f), VECTOR3(0.0f, 1.0f, 0.0f));
-        lightSpaceMatrix = lightProjection * lightView;
+        MATRIX shadowProj = PerspectiveMatrixRH(AngularToRadian(90.0f), 1.0f, 1.0f, far_plane);
+MATRIX shadowTransforms[6];
+shadowTransforms[0] = shadowProj * ViewMatrixRH(LightPos, LightPos + VECTOR3(1.0f, 0.0f, 0.0f), VECTOR3(0.0f, -1.0f, 0.0f));
+shadowTransforms[1] = shadowProj * ViewMatrixRH(LightPos, LightPos + VECTOR3(-1.0f, 0.0f, 0.0f), VECTOR3(0.0f, -1.0f, 0.0f));
+shadowTransforms[2] = shadowProj * ViewMatrixRH(LightPos, LightPos + VECTOR3(0.0f, 1.0f, 0.0f), VECTOR3(0.0f, 0.0f, 1.0f));
+shadowTransforms[3] = shadowProj * ViewMatrixRH(LightPos, LightPos + VECTOR3(0.0f, -1.0f, 0.0f), VECTOR3(0.0f, 0.0f, -1.0f));
+shadowTransforms[4] = shadowProj * ViewMatrixRH(LightPos, LightPos + VECTOR3(0.0f, 0.0f, 1.0f), VECTOR3(0.0f, -1.0f, 0.0f));
+shadowTransforms[5] = shadowProj * ViewMatrixRH(LightPos, LightPos + VECTOR3(0.0f, 0.0f, -1.0f), VECTOR3(0.0f, -1.0f, 0.0f));
 
-        shadowShader.Use();
-        shadowShader.SetMatrix("lightSpaceMatrix", lightSpaceMatrix);
+// 渲染到深度立方体贴图
+glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+glClear(GL_DEPTH_BUFFER_BIT);
 
-        shadowShader.SetMatrix("model", scp173model);
-        scp173.Draw(shadowShader);
+pointShadowShader.Use();
 
-        shadowShader.SetMatrix("model", planemodel);
-        plane.Draw(shadowShader);
+// 传递变换矩阵和光源参数
+for (unsigned int i = 0; i < 6; ++i)
+    pointShadowShader.SetMatrix(("shadowMatrices[" + std::to_string(i) + "]").c_str(), shadowTransforms[i]);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+pointShadowShader.SetVec3("lightPos", LightPos);
+pointShadowShader.SetFloat("far_plane", far_plane);
+
+// 渲染场景到深度立方体贴图
+pointShadowShader.SetMatrix("model", scp173model);
+scp173.Draw(pointShadowShader);
+
+pointShadowShader.SetMatrix("model", planemodel);
+plane.Draw(pointShadowShader);
+
+glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, window.width, window.height);
 
         renderer->Clear(0, 0, 0);
@@ -147,26 +170,26 @@ int main()
         lightShader.SetMatrix("model", lightCubeModel);
         lightCube.Draw(lightShader);
 
-        SetTexture(depthMap, GL_TEXTURE1);
+        SetCubeTexture(depthCubemap, GL_TEXTURE1);
         
         planeShader.Use();
         planeShader.SetMatrix("projection", projection);
         planeShader.SetMatrix("view", camera.Matrix());
         planeShader.SetMatrix("model", planemodel);
-        planeShader.SetMatrix("lightSpaceMatrix", lightSpaceMatrix);
         planeShader.SetVec3("ViewPos", camera.Pos());
         planeShader.SetVec3("LightPos", LightPos);
         planeShader.SetInt("shadowMap", 1);
+        planeShader.SetFloat("far_plane", far_plane);
         plane.Draw(planeShader);
 
         scp173Shader.Use();
         scp173Shader.SetMatrix("projection", projection);
         scp173Shader.SetMatrix("view", camera.Matrix());
         scp173Shader.SetMatrix("model", scp173model);
-        scp173Shader.SetMatrix("lightSpaceMatrix", lightSpaceMatrix);
         scp173Shader.SetVec3("ViewPos", camera.Pos());
         scp173Shader.SetVec3("LightPos", LightPos);
         scp173Shader.SetInt("shadowMap", 1);
+        scp173Shader.SetFloat("far_plane", far_plane);
         scp173.Draw(scp173Shader);
 
         renderer->Present(window.window);
