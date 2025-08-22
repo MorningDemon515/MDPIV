@@ -97,7 +97,7 @@ int main()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     shadowShader.Link();
-    
+
 ///////////////////////////////////////////////////////////////////////////////////
     system("color a");
     static double lastTime = glfwGetTime();
@@ -168,7 +168,6 @@ int main()
         scp173Shader.SetVec3("LightPos", LightPos);
         scp173Shader.SetInt("shadowMap", 1);
         scp173.Draw(scp173Shader);
-
         renderer->Present(window.window);
         
         window.Quit();
