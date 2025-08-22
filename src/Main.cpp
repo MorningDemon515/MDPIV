@@ -13,6 +13,57 @@ using namespace MD_Math;
 
 std::string title = "MDPIV";
 
+void DrawDepthTexture(int depthTexture, float x, float y, float width, float height)
+{
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+
+    static Shader debugShader(
+        "resources/glsl/debugDepth_vs.glsl",
+        "resources/glsl/debugDepth_fs.glsl"
+    );
+    
+    debugShader.Link();
+    debugShader.Use();
+    debugShader.SetInt("depthMap", 0);
+
+    glViewport(x, y, width, height);
+
+    float quadVertices[] = {
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        -1.0f, -1.0f,  0.0f, 0.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
+
+        -1.0f,  1.0f,  0.0f, 1.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
+         1.0f,  1.0f,  1.0f, 1.0f
+    };
+
+    unsigned int quadVAO, quadVBO;
+    glGenVertexArrays(1, &quadVAO);
+    glGenBuffers(1, &quadVBO);
+    glBindVertexArray(quadVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, depthTexture);
+
+    glBindVertexArray(quadVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    glDeleteVertexArrays(1, &quadVAO);
+    glDeleteBuffers(1, &quadVBO);
+    
+    glViewport(0, 0, 800, 600); 
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+}
+
 int main()
 {
     Window window = Window(800, 600);
@@ -45,13 +96,17 @@ int main()
     Shader scp173Shader = Shader("resources/glsl/model_vs.txt", "resources/glsl/model_fs.txt");
     scp173Shader.Link();
     MATRIX scp173model =  TranslationMatrix(0.0f, 0.0f, 0.0f) * ScaleMatrix(0.001f, 0.001f, 0.001f);
+    scp173Shader.Use();
+    scp173Shader.SetMatrix("model", scp173model);
 
     Quad plane = Quad();
     Shader planeShader = Shader("resources/glsl/plane_vs.txt", "resources/glsl/plane_fs.txt");
     planeShader.Link();
     MATRIX planemodel = TranslationMatrix(0.0f, -0.035f, 0.0f) *
                         RotationMatrix(AngularToRadian(-90.0f), 'X') *
-                        ScaleMatrix(10.0f, 10.0f, 10.0f);            
+                        ScaleMatrix(10.0f, 10.0f, 10.0f);       
+    planeShader.Use();
+    planeShader.SetMatrix("model", planemodel);                         
 
     Camera camera = Camera();
     camera.SetPos(VECTOR3(0.0f, 0.0f, 13.0f));         
@@ -75,7 +130,7 @@ int main()
     unsigned int depthMapFBO;
     const unsigned int SHADOW_WIDTH = 4096, SHADOW_HEIGHT = 4096;
     unsigned int depthMap;
-    Shader shadowShader = Shader("resources/glsl/shadow_vs.txt", "resources/glsl/shadow_fs.txt");
+    //Shader shadowShader = Shader("resources/glsl/shadow_vs.txt", "resources/glsl/shadow_fs.txt");
     MATRIX lightSpaceMatrix;
 
     glGenFramebuffers(1, &depthMapFBO);
@@ -96,7 +151,25 @@ int main()
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    shadowShader.Link();
+    //shadowShader.Link();
+
+    MATRIX lightProjection = OrthoMatrixRH(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 20.0f);
+    MATRIX lightView = ViewMatrixRH(LightPos, VECTOR3(0.0f, 0.0f, 0.0f), VECTOR3(0.0f, 1.0f, 0.0f));
+    lightSpaceMatrix = lightProjection * lightView;
+
+    Model s_scp173 = Model("resources/model/scp173.fbx");
+    Shader s_scp173Shader = Shader("resources/glsl/shadow_vs.txt", "resources/glsl/shadow_fs.txt");
+    s_scp173Shader.Link();
+    s_scp173Shader.Use();
+    s_scp173Shader.SetMatrix("lightSpaceMatrix", lightSpaceMatrix);
+    s_scp173Shader.SetMatrix("model", scp173model);
+
+    Quad s_plane = Quad();
+    Shader s_planeShader = Shader("resources/glsl/shadow_vs.txt", "resources/glsl/shadow_fs.txt");
+    s_planeShader.Link();   
+    s_planeShader.Use();
+    s_planeShader.SetMatrix("lightSpaceMatrix", lightSpaceMatrix);
+    s_planeShader.SetMatrix("model", planemodel);          
 
 ///////////////////////////////////////////////////////////////////////////////////
     system("color a");
@@ -120,23 +193,23 @@ int main()
         glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
         glClear(GL_DEPTH_BUFFER_BIT);
 
-        MATRIX lightProjection = OrthoMatrixRH(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 20.0f);
-        MATRIX lightView = ViewMatrixRH(LightPos, VECTOR3(0.0f, 0.0f, 0.0f), VECTOR3(0.0f, 1.0f, 0.0f));
-        lightSpaceMatrix = lightProjection * lightView;
+        //shadowShader.Use();
+        //shadowShader.SetMatrix("lightSpaceMatrix", lightSpaceMatrix);
 
-        shadowShader.Use();
-        shadowShader.SetMatrix("lightSpaceMatrix", lightSpaceMatrix);
+        //shadowShader.SetMatrix("model", scp173model);
+        s_scp173Shader.Use();
+        s_scp173.Draw(s_scp173Shader);
 
-        shadowShader.SetMatrix("model", scp173model);
-        scp173.Draw(shadowShader);
-
-        shadowShader.SetMatrix("model", planemodel);
-        plane.Draw(shadowShader);
+        //shadowShader.SetMatrix("model", planemodel);
+        s_planeShader.Use();
+        s_plane.Draw(s_planeShader);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, window.width, window.height);
 
         renderer->Clear(0, 0, 0);
+
+        DrawDepthTexture(depthMap, 0.0f, 0.0f, 400.0f, 400.0f);
 
         text1Shader.Use();
         text1.Draw(-0.5f, 0.8f, 0.0f, 0.003f);
@@ -152,7 +225,6 @@ int main()
         planeShader.Use();
         planeShader.SetMatrix("projection", projection);
         planeShader.SetMatrix("view", camera.Matrix());
-        planeShader.SetMatrix("model", planemodel);
         planeShader.SetMatrix("lightSpaceMatrix", lightSpaceMatrix);
         planeShader.SetVec3("ViewPos", camera.Pos());
         planeShader.SetVec3("LightPos", LightPos);
@@ -162,7 +234,6 @@ int main()
         scp173Shader.Use();
         scp173Shader.SetMatrix("projection", projection);
         scp173Shader.SetMatrix("view", camera.Matrix());
-        scp173Shader.SetMatrix("model", scp173model);
         scp173Shader.SetMatrix("lightSpaceMatrix", lightSpaceMatrix);
         scp173Shader.SetVec3("ViewPos", camera.Pos());
         scp173Shader.SetVec3("LightPos", LightPos);
