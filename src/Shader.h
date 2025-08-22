@@ -1,3 +1,4 @@
+
 #ifndef SHADER_H
 #define SHADER_H
 
@@ -6,7 +7,7 @@
 class Shader
 {
 private:
-    const char* VSS, *FSS;
+    const char* VSS, *FSS, *GSS;
     const char* ReadFile(const char* f);
 
 public:
@@ -14,6 +15,7 @@ public:
 
     Shader(){};
     Shader(const char* VSs, const char* FSs);
+    Shader(const char* VSs, const char* FSs, const char* GSs);
     ~Shader();
 
     void Link();
@@ -29,7 +31,5 @@ public:
     void SetMatrix(const char* name, MD_Math::MATRIX value);
 
 };
-
-
 
 #endif
