@@ -133,7 +133,6 @@ int main()
     //Shader shadowShader = Shader("resources/glsl/shadow_vs.txt", "resources/glsl/shadow_fs.txt");
     MATRIX lightSpaceMatrix;
 
-    glGenFramebuffers(1, &depthMapFBO);
     glGenTextures(1, &depthMap);
     glBindTexture(GL_TEXTURE_2D, depthMap);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 
@@ -144,7 +143,8 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-
+    
+	glGenFramebuffers(1, &depthMapFBO);
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
     glDrawBuffer(GL_NONE);
@@ -153,7 +153,7 @@ int main()
 
     //shadowShader.Link();
 
-    MATRIX lightProjection = OrthoMatrixRH(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 20.0f);
+    MATRIX lightProjection = OrthoMatrixRH(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
     MATRIX lightView = ViewMatrixRH(LightPos, VECTOR3(0.0f, 0.0f, 0.0f), VECTOR3(0.0f, 1.0f, 0.0f));
     lightSpaceMatrix = lightProjection * lightView;
 
