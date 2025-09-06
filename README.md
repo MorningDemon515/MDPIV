@@ -3,5 +3,3 @@
 Only MinGW64!!!
 
 Enjoy :-) 
-
-OpenGL
